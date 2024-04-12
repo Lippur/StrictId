@@ -1,6 +1,10 @@
 # StrictId
-*Strongly-typed, ergonomic, compatible, fun to use identifiers for your entities*
+***Strongly-typed, ergonomic, compatible, fun to use identifiers for your entities***  
 
+*Get on [NuGet](https://www.nuget.org/packages/StrictId)*:  
+[![StrictId](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId)](https://www.nuget.org/packages/StrictId)
+[![EFCore](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
+[![HotChocolate](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
 ---
 
 ## What
