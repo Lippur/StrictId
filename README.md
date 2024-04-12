@@ -31,7 +31,7 @@ public class Person {
 *Recommended, but optional*  
 In your global usings file, add the following to save yourself a few keystrokes:
 ```csharp
-global using Id = StrictId.Id;
+global using StrictId;
 ```
 
 ### Create
