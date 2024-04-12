@@ -1,9 +1,9 @@
 ﻿using System.Diagnostics;
 using System.Text.Json.Serialization;
-using Corpo.Core.Framework.Database.Identifiers;
+using StrictId.Json;
 
 // ReSharper disable once CheckNamespace
-namespace System;
+namespace StrictId;
 
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdJsonConverter))]
 public readonly record struct Id (Ulid Value)
@@ -95,7 +95,7 @@ public readonly record struct Id (Ulid Value)
 	public static explicit operator Ulid (Id value) => value.Value;
 }
 
-[DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdJsonConverter))]
+[DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdTypedJsonConverterFactory))]
 public readonly record struct Id<T> (Ulid Value)
 	: IComparable<Id<T>>,
 		IComparable<Id>,
@@ -125,10 +125,6 @@ public readonly record struct Id<T> (Ulid Value)
 
 	public int CompareTo (Id other) => Value.CompareTo(other.Value);
 
-	static Id<T> IParsable<Id<T>>.Parse (string s, IFormatProvider? provider) => new(Parse(s, provider));
-
-	public static bool TryParse (string? s, IFormatProvider? provider, out Id<T> result) => TryParse(s, out result);
-
 	public string ToString (string? format, IFormatProvider? formatProvider) => Value.ToString(format, formatProvider);
 
 	public bool TryFormat (
@@ -137,6 +133,10 @@ public readonly record struct Id<T> (Ulid Value)
 		ReadOnlySpan<char> format,
 		IFormatProvider? provider
 	) => Value.TryFormat(destination, out charsWritten, format, provider);
+
+	static Id<T> IParsable<Id<T>>.Parse (string s, IFormatProvider? provider) => new(Parse(s, provider));
+
+	public static bool TryParse (string? s, IFormatProvider? provider, out Id<T> result) => TryParse(s, out result);
 
 	public static Id<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider) => new(Ulid.Parse(s, provider));
 
