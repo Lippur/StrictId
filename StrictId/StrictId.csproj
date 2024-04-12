@@ -6,8 +6,30 @@
         <Nullable>enable</Nullable>
     </PropertyGroup>
 
+    <PropertyGroup>
+        <PackageId>StrictId</PackageId>
+        <Version>1.0.1</Version>
+        <Authors>Kristo Lippur</Authors>
+        <WebPage>https://github.com/Lippur/StrictId</WebPage>
+        <PackageTags>Id;Ulid;Guid;Entity;Entity Framework Core;EFCore;HotChocolate;GraphQL</PackageTags>
+        <Description>
+            StrictId provides ergonomic strongly typed IDs based on Ulid. Prevents errors and confusion, increases happiness.
+        </Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/Lippur/StrictId</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+    </PropertyGroup>
+    
     <ItemGroup>
       <PackageReference Include="Ulid" Version="1.3.3" />
     </ItemGroup>
-
+    
+    <ItemGroup>
+        <None Include="../README.md">
+            <Pack>true</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+    </ItemGroup>
 </Project>

@@ -189,4 +189,7 @@ public readonly record struct Id<T> (Ulid Value)
 	public static implicit operator Id<T> (Ulid value) => new(value);
 	public static implicit operator Id (Id<T> value) => value.IdValue;
 	public static implicit operator string (Id<T> value) => value.ToString();
+	public static implicit operator Id<T> (Guid value) => new(value);
+	public static implicit operator Guid (Id<T> value) => value.ToGuid();
+	public static explicit operator Id<T> (Id value) => new(value);
 }
