@@ -3,8 +3,8 @@
 
 *Get on [NuGet](https://www.nuget.org/packages/StrictId)*:  
 [![StrictId](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId)](https://www.nuget.org/packages/StrictId)
-[![EFCore](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
-[![HotChocolate](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
+[![EFCore](https://img.shields.io/nuget/dt/StrictId.EFCore?style=flat-square&label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
+[![HotChocolate](https://img.shields.io/nuget/dt/StrictId.HotChocolate?style=flat-square&label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
 
 ---
 
