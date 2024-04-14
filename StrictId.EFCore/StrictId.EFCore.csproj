@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <PackageId>StrictId.EFCore</PackageId>
-        <Version>1.0.1</Version>
+        <Version>1.0.3</Version>
         <Authors>Kristo Lippur</Authors>
         <WebPage>https://github.com/Lippur/StrictId</WebPage>
         <PackageTags>Id;Ulid;Guid;Entity;Entity Framework Core;EFCore;HotChocolate;GraphQL</PackageTags>
@@ -30,8 +30,8 @@
     </ItemGroup>
 
     <ItemGroup>
-        <PackageReference Include="StrictId" Version="1.0.1"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.4"/>
-        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.4"/>
+        <PackageReference Include="StrictId" Version="1.0.3"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore" Version="8.0.0"/>
+        <PackageReference Include="Microsoft.EntityFrameworkCore.Relational" Version="8.0.0"/>
     </ItemGroup>
 </Project>

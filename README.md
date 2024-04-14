@@ -12,18 +12,20 @@
 
 ```csharp
 public class Person {
-    public Id<Person> Id { get; init; } // Strongly typed ID, with Ulid as the underlying type
+    public Id<Person> Id { get; init; } // Strongly typed ID, lexicographically sortable, and round-trip convertible to Guid, Ulid, and string
     public Id<Dog> BestFriendId { get; set; } // No confusion about what ID we are looking for here
     public List<Id> Friends { get; set; } // Non-strict/non-generic version also included
 }
 ```
 
-- Strongly-typed IDs for your entities, or anything else
-- Ulid as the underlying value, which can easily be converted to and from Guid, string, or byte arrays
+- **Strongly-typed IDs for your entities, or anything else**
+- [Ulid](https://github.com/ulid/spec) as the underlying value, which can easily be converted to and from Guid, string, or byte arrays
 - Ergonomic, developer-friendly usage without ceremony, boilerplate, or annoyance
+- Cure to [primitive obsession](https://refactoring.guru/smells/primitive-obsession) by being a DDD-friendly value object
 - Built-in JSON conversion support for System.Text.Json
-- Full support for Entity Framework Core incl. value converters and value generators, with StrictId.EFCore
-- Full support for HotChocolate GraphQL incl. custom scalars for `Id<T>` and `Id`, with StrictId.HotChocolate
+- Plug-and-play support for Entity Framework Core incl. value converters and value generators, with [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore)
+- Plug-and-play support for HotChocolate GraphQL incl. custom scalars for `Id<T>` and `Id`, with [StrictId.HotChocolate](https://www.nuget.org/packages/StrictId.HotChocolate)
+- Easy to create your own integrations and converters thanks to lack of magic
 - Tiny memory footprint and highly efficient
 
 ## How
@@ -47,7 +49,12 @@ Id<Person> id = Ulid.NewUlid(); // Convert implicitly from Ulid
 Id<Person> id = Guid.NewGuid(); // Convert implicitly from Guid
 var id = (Id<Person>)"01HV9AF3QA4T121HCZ873M0BKK"; // Cast from string
 var id = (Id<Person>)Id.NewId(); // Cast from non-typed ID
+
+Id<Person> id = Id<Person>.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73"); // Parse from Guid or Ulid
+bool success = Id<Person>.TryParse("01HV9AF3QA4T121HCZ873M0BKK", out Id<Person> id); // Safely parse from Guid or Ulid
 ```
+
+Usage of the non-typed `Id` is identical.
 
 ### Convert
 
@@ -58,13 +65,12 @@ id.ToString(); // "01HV9AF3QA4T121HCZ873M0BKK"
 id.ToUlid(); // Same as Ulid.Parse("01HV9AF3QA4T121HCZ873M0BKK");
 id.ToGuid(); // Same as Guid.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73");
 id.ToByteArray(); // byte[]
-id.IdValue // Id("018ED2A7-8EEA-2682-20C5-9F41C7402E73")
+id.ToId() // Id("018ED2A7-8EEA-2682-20C5-9F41C7402E73")
 ```
 
 ### With Entity Framework Core
 
 **Install [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore) via NuGet**
-
 
 In your DbContext:
 ```csharp
@@ -92,6 +98,10 @@ builder.Property(e => e.Id)
     .HasStrictIdValueGenerator();
 ```
 
+#### Notes
+
+Id values are stored as fixed-length Ulid strings in the database (e.g. "01HV9AF3QA4T121HCZ873M0BKK"). If you would prefer to store them as byte arrays, you can create your own value generator and converter based on the ones included. Keep in mind, though, that the small improvement you gain in database performance and storage by using byte arrays is most likely not worth the loss of readability and clarity. 
+
 ### With Hot Chocolate GraphQL
 
 **Install [StrictId.HotChocolate](https://www.nuget.org/packages/StrictId.HotChocolate) via NuGet**
@@ -107,14 +117,15 @@ Scalars will be created for each strict ID, named `{Type}Id`. For example, `Id<P
 
 ## Why
 
-- Using Guid or Ulid as the type for IDs can easily lead to mixing up method arguments and assignments
-- Other similar packages are cumbersome, non-compatible, and frankly annoying
-- Ulid as the underlying type provides neat benefits over simple Guids, as they are ordered, making databases less fragmented, and look nicer as strings
+- Using primitives such as Guid or Ulid as the type for IDs can easily lead to mixing up method arguments and assignments
+- Using value objects makes your code easier to read and more DDD-friendly (see [primitive obsession](https://refactoring.guru/smells/primitive-obsession))
+- Other similar packages are cumbersome, non-compatible, and full of magic™, while StrictId's Id is just a simple generic type, no source generation or other hocus-pocus needed
+- Ulid as the underlying type provides [neat benefits](https://github.com/ulid/spec) over simple Guids, as they are ordered, making databases less fragmented, and look nicer as strings
 
 ## Acknowledgements
 
 - [Ulid](https://github.com/Cysharp/Ulid) - Library for ULID in C#, used for much of the underlying functionality
-- [StronglyTypedId](https://github.com/andrewlock/StronglyTypedId) - For doing this first, but in a much more convoluted, non-ergonomic, less compatible way
+- [StronglyTypedId](https://github.com/andrewlock/StronglyTypedId) - For doing this first, but in a much more convoluted, non-ergonomic way
 
 ## License
 
