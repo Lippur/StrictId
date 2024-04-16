@@ -18,6 +18,17 @@ public class IdJsonConverter : JsonConverter<Id>
 
 	public override void Write (Utf8JsonWriter writer, Id value, JsonSerializerOptions options) =>
 		_ulidJsonConverter.Write(writer, value.Value, options);
+
+	public override void WriteAsPropertyName (Utf8JsonWriter writer, Id value, JsonSerializerOptions options)
+		=> writer.WritePropertyName(value.ToString());
+	
+	public override Id ReadAsPropertyName (ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
+	{
+		if (reader.TokenType is not JsonTokenType.PropertyName)
+			throw new JsonException("Expected property name as JSON token type");
+
+		return new Id(reader.GetString()!);
+	}
 }
 
 public class IdTypedJsonConverterFactory : JsonConverterFactory
@@ -39,5 +50,20 @@ public class IdTypedJsonConverterFactory : JsonConverterFactory
 
 		public override void Write (Utf8JsonWriter writer, Id<T> value, JsonSerializerOptions options) =>
 			_ulidJsonConverter.Write(writer, value.Value, options);
+
+		public override void WriteAsPropertyName (Utf8JsonWriter writer, Id<T> value, JsonSerializerOptions options)
+			=> writer.WritePropertyName(value.ToString());
+
+		public override Id<T> ReadAsPropertyName (
+			ref Utf8JsonReader reader,
+			Type typeToConvert,
+			JsonSerializerOptions options
+		)
+		{
+			if (reader.TokenType is not JsonTokenType.PropertyName)
+				throw new JsonException("Expected property name as JSON token type");
+
+			return new Id<T>(reader.GetString()!);
+		}
 	}
 }
