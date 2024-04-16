@@ -6,6 +6,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrictId.EFCore", "StrictId
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrictId.HotChocolate", "StrictId.HotChocolate\StrictId.HotChocolate.csproj", "{2D2CA0DC-AB6D-41B7-8CD3-E1F47FEAB727}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "StrictId.Test", "StrictId.Test\StrictId.Test.csproj", "{E8805CC5-8DDE-42ED-B649-CA84C114FD66}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -24,5 +26,9 @@ Global
 		{2D2CA0DC-AB6D-41B7-8CD3-E1F47FEAB727}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{2D2CA0DC-AB6D-41B7-8CD3-E1F47FEAB727}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{2D2CA0DC-AB6D-41B7-8CD3-E1F47FEAB727}.Release|Any CPU.Build.0 = Release|Any CPU
+		{E8805CC5-8DDE-42ED-B649-CA84C114FD66}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{E8805CC5-8DDE-42ED-B649-CA84C114FD66}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{E8805CC5-8DDE-42ED-B649-CA84C114FD66}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{E8805CC5-8DDE-42ED-B649-CA84C114FD66}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

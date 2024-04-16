@@ -2,9 +2,9 @@
 ***Strongly-typed, ergonomic, compatible, fun to use identifiers for your entities***  
 
 *Get on [NuGet](https://www.nuget.org/packages/StrictId)*:  
-[![StrictId](https://img.shields.io/nuget/dt/StrictId?style=flat-square&label=StrictId)](https://www.nuget.org/packages/StrictId)
-[![EFCore](https://img.shields.io/nuget/dt/StrictId.EFCore?style=flat-square&label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
-[![HotChocolate](https://img.shields.io/nuget/dt/StrictId.HotChocolate?style=flat-square&label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
+[![StrictId](https://img.shields.io/nuget/v/StrictId?label=StrictId)](https://www.nuget.org/packages/StrictId)
+[![EFCore](https://img.shields.io/nuget/v/StrictId.EFCore?label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
+[![HotChocolate](https://img.shields.io/nuget/v/StrictId.HotChocolate?label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
 
 ---
 
