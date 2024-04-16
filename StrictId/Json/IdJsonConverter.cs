@@ -18,6 +18,17 @@ public class IdJsonConverter : JsonConverter<Id>
 
 	public override void Write (Utf8JsonWriter writer, Id value, JsonSerializerOptions options) =>
 		_ulidJsonConverter.Write(writer, value.Value, options);
+	
+	public override void WriteAsPropertyName(Utf8JsonWriter writer, Id value, JsonSerializerOptions options)
+	{
+		_ulidJsonConverter.WriteAsPropertyName(writer, value.Value, options);
+	}
+
+	public override Id ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert,
+		JsonSerializerOptions options)
+	{
+		return new(_ulidJsonConverter.ReadAsPropertyName(ref reader, typeToConvert, options));
+	}
 }
 
 public class IdTypedJsonConverterFactory : JsonConverterFactory
@@ -39,5 +50,16 @@ public class IdTypedJsonConverterFactory : JsonConverterFactory
 
 		public override void Write (Utf8JsonWriter writer, Id<T> value, JsonSerializerOptions options) =>
 			_ulidJsonConverter.Write(writer, value.Value, options);
+		
+		public override void WriteAsPropertyName(Utf8JsonWriter writer, Id<T> value, JsonSerializerOptions options)
+        {
+            _ulidJsonConverter.WriteAsPropertyName(writer, value.Value, options);
+        }
+
+        public override Id<T> ReadAsPropertyName(ref Utf8JsonReader reader, Type typeToConvert,
+            JsonSerializerOptions options)
+        {
+            return new(_ulidJsonConverter.ReadAsPropertyName(ref reader, typeToConvert, options));
+        }
 	}
 }
