@@ -6,7 +6,6 @@ public interface IId : IComparable, ISpanFormattable, IUtf8SpanFormattable
 	bool HasValue { get; }
 	byte[] Random { get; }
 	DateTimeOffset Time { get; }
-	static abstract bool IsValid (string? s);
 	Guid ToGuid ();
 	string ToString ();
 	string ToBase64 ();
