@@ -45,7 +45,6 @@ public readonly record struct Id (Ulid Value) : IId, IComparable<Id>, ISpanParsa
 		IFormatProvider? provider
 	) => Value.TryFormat(utf8Destination, out bytesWritten, format, provider);
 
-	public static bool IsValid (string? s) => TryParse(s, out _);
 	public Guid ToGuid () => Value.ToGuid();
 
 	public override string ToString () => Value.ToString();
@@ -60,17 +59,7 @@ public readonly record struct Id (Ulid Value) : IId, IComparable<Id>, ISpanParsa
 
 	public static Id Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		try
-		{
-			return new Id(Ulid.Parse(s, provider));
-		}
-		catch (ArgumentException) { }
-
-		try
-		{
-			return new Id(Guid.Parse(s, provider));
-		}
-		catch (ArgumentException) { }
+		if (TryParse(s, provider, out var id)) return id;
 
 		throw new ArgumentException("Could not parse value into a valid Ulid or Guid");
 	}
@@ -92,6 +81,8 @@ public readonly record struct Id (Ulid Value) : IId, IComparable<Id>, ISpanParsa
 		id = new Id();
 		return false;
 	}
+
+	public static bool IsValid (string? s) => TryParse(s, out _);
 
 	public static Id Parse (string value)
 	{
@@ -183,7 +174,6 @@ public readonly record struct Id<T> (Ulid Value)
 		IFormatProvider? provider
 	) => Value.TryFormat(utf8Destination, out bytesWritten, format, provider);
 
-	public static bool IsValid (string? s) => TryParse(s, out _);
 	public Guid ToGuid () => Value.ToGuid();
 
 	public override string ToString () => Value.ToString();
@@ -195,18 +185,9 @@ public readonly record struct Id<T> (Ulid Value)
 
 	public static bool TryParse (string? s, IFormatProvider? provider, out Id<T> result) => TryParse(s, out result);
 
-	public static Id<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider) {
-		try
-		{
-			return new Id<T>(Ulid.Parse(s, provider));
-		}
-		catch (ArgumentException) { }
-
-		try
-		{
-			return new Id<T>(Guid.Parse(s, provider));
-		}
-		catch (ArgumentException) { }
+	public static Id<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
+	{
+		if (TryParse(s, provider, out var id)) return id;
 
 		throw new ArgumentException("Could not parse value into a valid Ulid or Guid");
 	}
@@ -228,6 +209,8 @@ public readonly record struct Id<T> (Ulid Value)
 		id = new Id<T>();
 		return false;
 	}
+
+	public static bool IsValid (string? s) => TryParse(s, out _);
 
 	public Id ToId () => new(Value);
 
