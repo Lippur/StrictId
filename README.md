@@ -47,8 +47,8 @@ new Id<Person>(Id.NewId()); // Create from non-typed ID
 
 Id<Person> id = Ulid.NewUlid(); // Convert implicitly from Ulid
 Id<Person> id = Guid.NewGuid(); // Convert implicitly from Guid
+Id<Person> id = Id.NewId(); // Convert implicitly from non-typed Id
 var id = (Id<Person>)"01HV9AF3QA4T121HCZ873M0BKK"; // Cast from string
-var id = (Id<Person>)Id.NewId(); // Cast from non-typed ID
 
 Id<Person> id = Id<Person>.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73"); // Parse from Guid or Ulid
 bool success = Id<Person>.TryParse("01HV9AF3QA4T121HCZ873M0BKK", out Id<Person> id); // Safely parse from Guid or Ulid
@@ -66,6 +66,35 @@ id.ToUlid(); // Same as Ulid.Parse("01HV9AF3QA4T121HCZ873M0BKK");
 id.ToGuid(); // Same as Guid.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73");
 id.ToByteArray(); // byte[]
 id.ToId() // Id("018ED2A7-8EEA-2682-20C5-9F41C7402E73")
+```
+
+### Benefit
+StrictId will prevent you from accidentally doing bad things, and lets you do nice things instead:
+
+```csharp
+var personId = Id<Person>.NewId();
+var dogId = Id<Dog>.NewId();
+
+if (personId == dogId) Console.Write("Uh oh"); // Compiler error
+
+public void Feed(Id<Dog> id) { 
+    GetDog(id).FeedLeftovers();
+}
+
+Feed(personId); // Compiler error
+
+// But:
+public class Diet {
+    public void Feed(Id<Dog> id) { 
+        GetDog(id).FeedLeftovers();
+    }
+    
+    public void Feed(Id<Person> id) { 
+        GetPerson(id).FeedMichelinStarMeal();
+    }
+}
+
+Feed(personId); // We eat well tonight. Better method overloads!
 ```
 
 ### With Entity Framework Core
@@ -100,7 +129,8 @@ builder.Property(e => e.Id)
 
 #### Notes
 
-Id values are stored as fixed-length Ulid strings in the database (e.g. "01HV9AF3QA4T121HCZ873M0BKK"). If you would prefer to store them as byte arrays, you can create your own value generator and converter based on the ones included. Keep in mind, though, that the small improvement you gain in database performance and storage by using byte arrays is most likely not worth the loss of readability and clarity. 
+Id values are stored as fixed-length Ulid strings in the database (e.g. "01HV9AF3QA4T121HCZ873M0BKK"). An alternative value converter for storing them as Guid is also included (`StrictId.EFCore.ValueConverters.IdToGuidConverter`). Keep in mind that storing the IDs as Guid makes the database representation visually different from the normal string representation, which can be inconvenient.
+If you would prefer to store IDs as byte arrays, you can create your own value generator and converter based on the ones included. Keep in mind, though, that the small improvement you gain in database performance and storage by using byte arrays is most likely not worth the loss of readability and clarity. 
 
 ### With Hot Chocolate GraphQL
 
