@@ -119,7 +119,7 @@ public readonly record struct Id (Ulid Value) : IId, IComparable<Id>, ISpanParsa
 		return false;
 	}
 
-	public static implicit operator Id (string value) => new(value);
+	public static explicit operator Id (string value) => new(value);
 	public static implicit operator Id (Ulid value) => new(value);
 	public static implicit operator Id (Guid value) => new(value);
 	public static explicit operator Guid (Id value) => value.ToGuid();
@@ -249,9 +249,9 @@ public readonly record struct Id<T> (Ulid Value)
 
 	public static explicit operator Id<T> (string value) => new(value);
 	public static implicit operator Id<T> (Ulid value) => new(value);
-	public static implicit operator Id (Id<T> value) => value.ToId();
-	public static implicit operator string (Id<T> value) => value.ToString();
+	public static explicit operator Id (Id<T> value) => value.ToId();
+	public static explicit operator string (Id<T> value) => value.ToString();
 	public static implicit operator Id<T> (Guid value) => new(value);
-	public static implicit operator Guid (Id<T> value) => value.ToGuid();
-	public static explicit operator Id<T> (Id value) => new(value);
+	public static explicit operator Guid (Id<T> value) => value.ToGuid();
+	public static implicit operator Id<T> (Id value) => new(value);
 }
