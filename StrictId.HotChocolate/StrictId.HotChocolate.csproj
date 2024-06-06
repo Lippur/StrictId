@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <PackageId>StrictId.HotChocolate</PackageId>
-        <Version>1.0.4</Version>
+        <Version>1.1.0</Version>
         <Authors>Kristo Lippur</Authors>
         <WebPage>https://github.com/Lippur/StrictId</WebPage>
         <PackageTags>Id;Ulid;Guid;Entity;Entity Framework Core;EFCore;HotChocolate;GraphQL</PackageTags>
