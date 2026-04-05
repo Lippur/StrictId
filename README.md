@@ -1,4 +1,4 @@
-# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/StrictId-Dark.svg"><img alt="StrictId" src="assets/StrictId-Light.svg" height="80"></picture>
+# <img alt="StrictId" src="assets/StrictId-Light.svg" height="80">
 
 ***Strongly-typed, ergonomic, fun to use identifiers for your entities without any magic***
 
