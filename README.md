@@ -1,4 +1,4 @@
-# <img alt="StrictId" src="assets/StrictId-Light.svg" height="80">
+# ![StrictId](assets/StrictId-Light.svg)
 
 ***Strongly-typed, ergonomic, fun to use identifiers for your entities without any magic***
 
