@@ -134,6 +134,19 @@ public sealed class IdTypedJsonConverterFactory : JsonConverterFactory
 		typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(Id<>);
 
 	/// <inheritdoc />
+	// The IL3050 / IL2026 suppressions below are load-bearing for AOT publish:
+	// CreateConverter is an override so it cannot itself carry [RequiresDynamicCode],
+	// but it calls the [RequiresDynamicCode]-annotated reflection fallback. The
+	// suppression is safe because the registry check that precedes the call is the
+	// AOT-friendly path, and the StrictId source generator populates that registry
+	// at module init for every [IdPrefix]-decorated type visible at compile time.
+	// AOT consumers whose types all hit the registry never execute the fallback in
+	// practice; if they somehow do, the fallback itself remains annotated and its
+	// use is reportable at its own call site.
+	[UnconditionalSuppressMessage("AOT", "IL3050",
+		Justification = "The reflection fallback only runs when the StrictId source generator did not emit a registration for this closed generic. Source-gen-visible types hit the StrictIdRegistry cache and never reach this code path at runtime.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026",
+		Justification = "Same guard as IL3050 — the reflection fallback is gated by a StrictIdRegistry lookup populated at module init by the source generator.")]
 	public override JsonConverter? CreateConverter (Type typeToConvert, JsonSerializerOptions options)
 	{
 		if (StrictIdRegistry.TryGetJsonConverter(typeToConvert, out var cached))

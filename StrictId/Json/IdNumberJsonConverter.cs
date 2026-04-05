@@ -124,6 +124,14 @@ public sealed class IdNumberTypedJsonConverterFactory : JsonConverterFactory
 		typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(IdNumber<>);
 
 	/// <inheritdoc />
+	// See IdJsonConverter.cs for why this pair of unconditional suppressions is
+	// required: CreateConverter is an override and cannot carry [RequiresDynamicCode],
+	// but it calls a fallback that does. The StrictIdRegistry guard that precedes
+	// the call is the AOT-friendly path that the source generator populates.
+	[UnconditionalSuppressMessage("AOT", "IL3050",
+		Justification = "The reflection fallback only runs when the StrictId source generator did not emit a registration for this closed generic. Source-gen-visible types hit the StrictIdRegistry cache and never reach this code path at runtime.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026",
+		Justification = "Same guard as IL3050 — the reflection fallback is gated by a StrictIdRegistry lookup populated at module init by the source generator.")]
 	public override JsonConverter? CreateConverter (Type typeToConvert, JsonSerializerOptions options)
 	{
 		if (StrictIdRegistry.TryGetJsonConverter(typeToConvert, out var cached))

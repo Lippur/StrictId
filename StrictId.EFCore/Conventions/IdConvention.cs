@@ -66,6 +66,17 @@ public class IdConvention : IPropertyAddedConvention
 	/// consults <see cref="StrictIdEfCoreRegistry"/> for a source-generated instance; on
 	/// miss, falls back to closing the open-generic converter via reflection.
 	/// </summary>
+	// Same pattern as StrictId's JSON factories: ResolveConverter sits behind
+	// IPropertyAddedConvention.ProcessPropertyAdded which cannot itself be
+	// annotated, so the call site suppressions are required even though the
+	// reflection helper is annotated correctly. The registry guard ensures the
+	// reflection path is only reached for types the source generator did not
+	// visit — AOT + EFCore consumers who decorate every entity with [IdPrefix]
+	// will hit the cache every time and never execute the fallback.
+	[UnconditionalSuppressMessage("AOT", "IL3050",
+		Justification = "The reflection fallback only runs when the StrictId source generator did not emit a registration for this closed id type. Source-gen-visible types hit the StrictIdEfCoreRegistry cache and never reach this code path at runtime.")]
+	[UnconditionalSuppressMessage("Trimming", "IL2026",
+		Justification = "Same guard as IL3050 — the reflection fallback is gated by a StrictIdEfCoreRegistry lookup populated at module init by the source generator.")]
 	private static ValueConverter? ResolveConverter (Type closedIdType, Type openGenericConverter, Type typeArgument)
 	{
 		if (StrictIdEfCoreRegistry.TryGetValueConverter(closedIdType, out var cached))

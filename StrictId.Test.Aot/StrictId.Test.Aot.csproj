@@ -1,0 +1,33 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <OutputType>Exe</OutputType>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+
+        <!-- Phase 11: this console project is the AOT smoke test. PublishAot turns on
+             the ILC compiler and every trim/AOT analyzer, so any reflection path in
+             StrictId or its source-generated output that is not guarded by an
+             [UnconditionalSuppressMessage] / [RequiresDynamicCode] surfaces as an
+             IL3050 / IL2026 at publish time. -->
+        <PublishAot>true</PublishAot>
+        <InvariantGlobalization>true</InvariantGlobalization>
+        <IsPackable>false</IsPackable>
+        <!-- Not exercised from dotnet test. Excluded from the standard test run
+             because AOT publishing is slow and gated behind a platform-specific RID. -->
+        <IsTestProject>false</IsTestProject>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\StrictId\StrictId.csproj"/>
+        <!-- Direct analyzer reference so the source generator populates
+             StrictIdRegistry at module init for every [IdPrefix]-decorated type in
+             this assembly. Without this the smoke test would fall through to the
+             reflection path, defeating the purpose of the test. -->
+        <ProjectReference Include="..\StrictId.Generators\StrictId.Generators.csproj"
+                          OutputItemType="Analyzer"
+                          ReferenceOutputAssembly="false"/>
+    </ItemGroup>
+
+</Project>
