@@ -16,9 +16,10 @@ namespace StrictId;
 /// <remarks>
 /// <para>
 /// Uses the default <see cref="IdStringOptions"/>: maximum length 255, character set
-/// <see cref="IdStringCharSet.Any"/>, and case-sensitive comparison. The non-generic
-/// form cannot be configured via attribute — attach an <see cref="IdStringAttribute"/>
-/// to a marker type and use <see cref="IdString{T}"/> if you need custom rules.
+/// <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>, and case-sensitive comparison.
+/// The non-generic form cannot be configured via attribute — attach an
+/// <see cref="IdStringAttribute"/> to a marker type and use <see cref="IdString{T}"/>
+/// if you need custom rules.
 /// </para>
 /// <para>
 /// The <see cref="Value"/> property may be <see langword="null"/> for a

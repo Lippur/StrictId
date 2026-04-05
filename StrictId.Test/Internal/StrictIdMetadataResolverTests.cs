@@ -346,7 +346,7 @@ public class StrictIdMetadataResolverTests
 		var opts = StrictIdMetadataResolver.ResolveStringOptions(typeof(NoStringAttr));
 
 		opts.MaxLength.Should().Be(255);
-		opts.CharSet.Should().Be(IdStringCharSet.Any);
+		opts.CharSet.Should().Be(IdStringCharSet.AlphanumericDashUnderscore);
 		opts.IgnoreCase.Should().BeFalse();
 	}
 

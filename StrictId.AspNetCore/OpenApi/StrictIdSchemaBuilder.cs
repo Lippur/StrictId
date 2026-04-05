@@ -221,11 +221,12 @@ internal static class StrictIdSchemaBuilder
 			IdStringCharSet.Alphanumeric => "[A-Za-z0-9]",
 			IdStringCharSet.AlphanumericDash => "[A-Za-z0-9-]",
 			IdStringCharSet.AlphanumericUnderscore => "[A-Za-z0-9_]",
+			IdStringCharSet.AlphanumericDashUnderscore => "[A-Za-z0-9_-]",
 			// Any: non-whitespace, non-separator characters. The parser's
 			// IdStringValidator.IsPrintableNonSeparator also rejects control chars
 			// and the four IdSeparator glyphs; we encode that directly here.
 			IdStringCharSet.Any => @"[^\s_/.:]",
-			_ => "[A-Za-z0-9]", // defensive default; enum exhaustiveness enforced in core
+			_ => "[A-Za-z0-9_-]", // defensive default; enum exhaustiveness enforced in core
 		};
 
 		return $"{charClass}{{1,{options.MaxLength}}}";

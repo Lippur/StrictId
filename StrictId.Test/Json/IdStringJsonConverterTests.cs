@@ -71,7 +71,7 @@ public class IdStringJsonConverterTests
 	[Test]
 	public void IdString_DeserializeInvalidString_Throws ()
 	{
-		// Default 'Any' charset rejects whitespace.
+		// Default AlphanumericDashUnderscore charset rejects whitespace.
 		var act = () => JsonSerializer.Deserialize<IdString>("\"has spaces\"");
 		act.Should().Throw<FormatException>();
 	}

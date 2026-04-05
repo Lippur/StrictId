@@ -20,13 +20,14 @@ internal readonly struct IdStringOptions
 
 	/// <summary>
 	/// The fallback configuration for a type with no <see cref="IdStringAttribute"/>:
-	/// <see cref="MaxLength"/> = 255, <see cref="CharSet"/> = <see cref="IdStringCharSet.Any"/>,
+	/// <see cref="MaxLength"/> = 255,
+	/// <see cref="CharSet"/> = <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>,
 	/// <see cref="IgnoreCase"/> = <see langword="false"/>.
 	/// </summary>
 	public static IdStringOptions Default { get; } = new()
 	{
 		MaxLength = 255,
-		CharSet = IdStringCharSet.Any,
+		CharSet = IdStringCharSet.AlphanumericDashUnderscore,
 		IgnoreCase = false,
 	};
 }

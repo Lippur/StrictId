@@ -13,9 +13,9 @@ public sealed class IdStringAttribute : Attribute
 
 	/// <summary>
 	/// Restricts the characters permitted in the suffix. Defaults to
-	/// <see cref="IdStringCharSet.Any"/>.
+	/// <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>.
 	/// </summary>
-	public IdStringCharSet CharSet { get; set; } = IdStringCharSet.Any;
+	public IdStringCharSet CharSet { get; set; } = IdStringCharSet.AlphanumericDashUnderscore;
 
 	/// <summary>
 	/// <see langword="true"/> to treat differently-cased suffixes as equal. Defaults to

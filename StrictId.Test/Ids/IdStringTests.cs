@@ -68,11 +68,21 @@ public class IdStringTests
 	}
 
 	[Test]
-	public void Constructor_ContainingSeparatorChar_Throws ()
+	public void Constructor_DashAndUnderscore_AllowedByDefault ()
 	{
-		// Default CharSet 'Any' excludes the four separator characters.
-		var act = () => new IdString("abc_def");
-		act.Should().Throw<FormatException>();
+		// Default charset AlphanumericDashUnderscore accepts _ and -.
+		new IdString("abc_def").Value.Should().Be("abc_def");
+		new IdString("abc-def").Value.Should().Be("abc-def");
+	}
+
+	[Test]
+	public void Constructor_OtherSpecialChars_RejectedByDefault ()
+	{
+		// Default charset AlphanumericDashUnderscore rejects other characters.
+		((Func<IdString>)(() => new IdString("abc/def"))).Should().Throw<FormatException>();
+		((Func<IdString>)(() => new IdString("abc.def"))).Should().Throw<FormatException>();
+		((Func<IdString>)(() => new IdString("abc:def"))).Should().Throw<FormatException>();
+		((Func<IdString>)(() => new IdString("abc@def"))).Should().Throw<FormatException>();
 	}
 
 	// ═════ ToString ══════════════════════════════════════════════════════════
@@ -154,13 +164,12 @@ public class IdStringTests
 	}
 
 	[Test]
-	public void Constructor_ThirdPartyIdWithSeparator_RejectedByDefaultCharSet ()
+	public void Constructor_ThirdPartyIdWithDashOrUnderscore_AcceptedByDefault ()
 	{
-		// Non-generic IdString uses the default 'Any' charset, which excludes the
-		// four separator characters. To wrap a third-party ID like "cus_L8x9Kq4YZ",
-		// use IdString<T> with a more permissive [IdString(CharSet = ...)] attribute.
-		var act = () => new IdString("cus_L8x9Kq4YZ");
-		act.Should().Throw<FormatException>();
+		// Default charset AlphanumericDashUnderscore accepts the common separators
+		// found in third-party IDs (Stripe cus_..., slug-style, etc.).
+		new IdString("cus_L8x9Kq4YZ").Value.Should().Be("cus_L8x9Kq4YZ");
+		new IdString("my-item-42").Value.Should().Be("my-item-42");
 	}
 
 	// ═════ Comparison ════════════════════════════════════════════════════════

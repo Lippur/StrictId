@@ -2,13 +2,12 @@ namespace StrictId;
 
 /// <summary>
 /// Restricts the character set permitted inside the suffix of an <c>IdString&lt;T&gt;</c>.
-/// Whitespace and the type's separator character are always rejected regardless of
-/// which value is chosen.
+/// Whitespace is always rejected regardless of which value is chosen.
 /// </summary>
 public enum IdStringCharSet
 {
 	/// <summary>
-	/// Any printable, non-whitespace, non-separator character is allowed. The default.
+	/// Any printable, non-whitespace, non-separator character is allowed.
 	/// </summary>
 	Any,
 
@@ -20,4 +19,11 @@ public enum IdStringCharSet
 
 	/// <summary>ASCII letters, digits, and underscore: <c>[A-Za-z0-9_]</c>.</summary>
 	AlphanumericUnderscore,
+
+	/// <summary>
+	/// ASCII letters, digits, dash, and underscore: <c>[A-Za-z0-9_-]</c>. The default.
+	/// Covers the most common characters found in real-world opaque string identifiers
+	/// (Stripe <c>cus_L8x9Kq4YZ</c>, slug-style <c>my-item-42</c>, etc.).
+	/// </summary>
+	AlphanumericDashUnderscore,
 }

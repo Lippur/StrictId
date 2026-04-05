@@ -240,7 +240,8 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 						1 => "Alphanumeric",
 						2 => "AlphanumericDash",
 						3 => "AlphanumericUnderscore",
-						_ => "Any",
+						4 => "AlphanumericDashUnderscore",
+						_ => "AlphanumericDashUnderscore",
 					};
 					break;
 				case "IgnoreCase" when named.Value.Value is bool ic:

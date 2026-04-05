@@ -373,10 +373,18 @@ public class IdStringOfTTests
 	}
 
 	[Test]
-	public void NoPrefix_RejectsSeparatorCharInValue ()
+	public void NoPrefix_AcceptsDashAndUnderscore ()
 	{
-		// NoPrefix has no [IdString] attribute → defaults (Any charset, excludes separators).
-		var act = () => new IdString<NoPrefix>("abc_def");
+		// NoPrefix has no [IdString] attribute → defaults (AlphanumericDashUnderscore charset).
+		new IdString<NoPrefix>("abc_def").Value.Should().Be("abc_def");
+		new IdString<NoPrefix>("abc-def").Value.Should().Be("abc-def");
+	}
+
+	[Test]
+	public void NoPrefix_RejectsOtherSpecialChars ()
+	{
+		// Default charset rejects characters outside [A-Za-z0-9_-].
+		var act = () => new IdString<NoPrefix>("abc.def");
 		act.Should().Throw<FormatException>();
 	}
 }

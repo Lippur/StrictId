@@ -34,7 +34,7 @@ public class EFCoreTests
 		public string Email { get; set; } = string.Empty;
 	}
 
-	[IdString(MaxLength = 64)]
+	[IdString(MaxLength = 64, CharSet = IdStringCharSet.Any)]
 	private class UnicodeTag
 	{
 		public IdString<UnicodeTag> Id { get; set; }
@@ -339,8 +339,8 @@ public class EFCoreTests
 	[Test]
 	public void IdStringOfT_WithAnyCharSetRemainsUnicode ()
 	{
-		// UnicodeTag declares [IdString(MaxLength = 64)] without specifying a CharSet,
-		// which defaults to Any — the convention must leave Unicode as the provider default.
+		// UnicodeTag declares [IdString(MaxLength = 64, CharSet = Any)] — the convention
+		// must leave Unicode as the provider default for the Any charset.
 		var property = _db.Model.FindEntityType(typeof(UnicodeTag))!.FindProperty(nameof(UnicodeTag.Id))!;
 		property.IsUnicode().Should().NotBe(false);
 		property.GetMaxLength().Should().Be(64);

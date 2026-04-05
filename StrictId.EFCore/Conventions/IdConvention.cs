@@ -110,6 +110,7 @@ public class IdConvention : IPropertyAddedConvention
 			}
 			current = current.BaseType;
 		}
-		return (255, false);
+		// Default charset is AlphanumericDashUnderscore (ASCII-only).
+		return (255, true);
 	}
 }

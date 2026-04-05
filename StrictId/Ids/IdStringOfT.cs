@@ -21,7 +21,8 @@ namespace StrictId;
 /// <remarks>
 /// <para>
 /// Validation rules come from <see cref="IdStringAttribute"/> on <typeparamref name="T"/>
-/// or defaults (max length 255, <see cref="IdStringCharSet.Any"/>, case-sensitive).
+/// or defaults (max length 255, <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>,
+/// case-sensitive).
 /// When <see cref="IdStringAttribute.IgnoreCase"/> is <see langword="true"/> the
 /// stored value is normalized to lowercase on construction so that equality and
 /// comparison work correctly without fighting the record struct auto-generated

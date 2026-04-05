@@ -54,6 +54,7 @@ internal static class IdStringValidator
 		IdStringCharSet.Alphanumeric => IsAsciiAlphanumeric(c),
 		IdStringCharSet.AlphanumericDash => IsAsciiAlphanumeric(c) || c == '-',
 		IdStringCharSet.AlphanumericUnderscore => IsAsciiAlphanumeric(c) || c == '_',
+		IdStringCharSet.AlphanumericDashUnderscore => IsAsciiAlphanumeric(c) || c is '_' or '-',
 		_ => false,
 	};
 
