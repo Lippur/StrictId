@@ -41,8 +41,7 @@ internal sealed class StrictIdSchemaTransformer
 		CancellationToken cancellationToken
 	)
 	{
-		var clrType = context.JsonTypeInfo.Type;
-		var fields = ResolveFields(clrType);
+		var fields = StrictIdSchemaBuilder.TryBuildFor(context.JsonTypeInfo.Type);
 		if (fields is null) return Task.CompletedTask;
 
 		// Reset any previously-generated structure and write the string shape. Clearing
@@ -59,30 +58,5 @@ internal sealed class StrictIdSchemaTransformer
 		schema.Description = fields.Value.Description;
 
 		return Task.CompletedTask;
-	}
-
-	/// <summary>
-	/// Returns the schema fields to write for <paramref name="clrType"/>, or
-	/// <see langword="null"/> when the type is not a StrictId value type.
-	/// </summary>
-	private static StrictIdSchemaBuilder.SchemaFields? ResolveFields (Type clrType)
-	{
-		// Non-generic families — direct type check.
-		if (clrType == typeof(Id)) return StrictIdSchemaBuilder.BuildForUlid(entityType: null);
-		if (clrType == typeof(IdNumber)) return StrictIdSchemaBuilder.BuildForNumber(entityType: null);
-		if (clrType == typeof(IdString)) return StrictIdSchemaBuilder.BuildForString(entityType: null);
-
-		// Generic families — compare open generic definition, then peel the entity
-		// type off the first (and only) type argument.
-		if (!clrType.IsGenericType) return null;
-
-		var openDefinition = clrType.GetGenericTypeDefinition();
-		var entityType = clrType.GetGenericArguments()[0];
-
-		if (openDefinition == typeof(Id<>)) return StrictIdSchemaBuilder.BuildForUlid(entityType);
-		if (openDefinition == typeof(IdNumber<>)) return StrictIdSchemaBuilder.BuildForNumber(entityType);
-		if (openDefinition == typeof(IdString<>)) return StrictIdSchemaBuilder.BuildForString(entityType);
-
-		return null;
 	}
 }

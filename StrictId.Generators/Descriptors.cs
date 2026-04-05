@@ -10,7 +10,6 @@ namespace StrictId.Generators;
 /// </summary>
 internal sealed record PrefixDescriptor (
 	string FullyQualifiedName,
-	string EscapedIdentifier,
 	EquatableArray<PrefixDeclaration> Prefixes,
 	string SeparatorEnumMember
 );
@@ -26,7 +25,6 @@ internal sealed record PrefixDeclaration (string Prefix, bool IsDefault) : IEqua
 /// </summary>
 internal sealed record StringOptionsDescriptor (
 	string FullyQualifiedName,
-	string EscapedIdentifier,
 	int MaxLength,
 	string CharSetEnumMember,
 	bool IgnoreCase

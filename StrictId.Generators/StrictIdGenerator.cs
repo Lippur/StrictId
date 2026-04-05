@@ -170,14 +170,12 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 
 		return new PrefixDescriptor(
 			FullyQualifiedName: target.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-			EscapedIdentifier: BuildSanitisedIdentifier(target),
 			Prefixes: new EquatableArray<PrefixDeclaration>(declarations.ToImmutable()),
 			SeparatorEnumMember: separator);
 	}
 
 	private static PrefixDescriptor EmptyDescriptor () => new(
 		FullyQualifiedName: string.Empty,
-		EscapedIdentifier: string.Empty,
 		Prefixes: EquatableArray<PrefixDeclaration>.Empty,
 		SeparatorEnumMember: "Underscore");
 
@@ -216,7 +214,6 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		{
 			return new StringOptionsDescriptor(
 				FullyQualifiedName: string.Empty,
-				EscapedIdentifier: string.Empty,
 				MaxLength: 0,
 				CharSetEnumMember: "Any",
 				IgnoreCase: false);
@@ -254,7 +251,6 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 
 		return new StringOptionsDescriptor(
 			FullyQualifiedName: target.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
-			EscapedIdentifier: BuildSanitisedIdentifier(target),
 			MaxLength: maxLength,
 			CharSetEnumMember: charSet,
 			IgnoreCase: ignoreCase);
@@ -305,20 +301,27 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		// emit JSON + EF converter registrations for each one. Types with empty
 		// FullyQualifiedName were filtered during extraction (inaccessible nesting,
 		// invalid grammar, or cardinality mismatch — the analyzer surfaces the last
-		// two as diagnostics).
-		var validEntityTypes = ImmutableArray.CreateBuilder<string>();
+		// two as diagnostics). A type may appear in both descriptor lists when it
+		// declares both [IdPrefix] and [IdString]; the HashSet dedupes those.
+		var validEntityTypes = new List<string>();
+		var seenEntityTypes = new HashSet<string>(StringComparer.Ordinal);
 
 		foreach (var descriptor in prefixDescriptors)
 		{
 			if (descriptor.FullyQualifiedName.Length == 0) continue;
 			EmitPrefixRegistration(sb, descriptor);
-			validEntityTypes.Add(descriptor.FullyQualifiedName);
+			if (seenEntityTypes.Add(descriptor.FullyQualifiedName))
+				validEntityTypes.Add(descriptor.FullyQualifiedName);
 		}
 
 		foreach (var descriptor in stringDescriptors)
 		{
 			if (descriptor.FullyQualifiedName.Length == 0) continue;
 			EmitStringRegistration(sb, descriptor);
+			// [IdString]-only types still need JSON/EF converters so consumers
+			// serialising or persisting IdString<T> stay on the AOT-friendly path.
+			if (seenEntityTypes.Add(descriptor.FullyQualifiedName))
+				validEntityTypes.Add(descriptor.FullyQualifiedName);
 		}
 
 		// JSON converter registrations: emit for every family (Id, IdNumber, IdString)
@@ -490,18 +493,6 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 			}
 		}
 		return true;
-	}
-
-	private static string BuildSanitisedIdentifier (INamedTypeSymbol symbol)
-	{
-		var display = symbol.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat);
-		var sb = new StringBuilder(display.Length);
-		foreach (var c in display)
-		{
-			if (char.IsLetterOrDigit(c) || c == '_') sb.Append(c);
-			else sb.Append('_');
-		}
-		return sb.ToString();
 	}
 
 }

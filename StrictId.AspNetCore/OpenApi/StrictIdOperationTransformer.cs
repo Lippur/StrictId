@@ -37,7 +37,7 @@ internal sealed class StrictIdOperationTransformer
 			var clrType = paramDescription.Type;
 			if (clrType is null) continue;
 
-			var fields = ResolveFields(clrType);
+			var fields = StrictIdSchemaBuilder.TryBuildFor(clrType);
 			if (fields is null) continue;
 
 			// Find the matching operation parameter by name. ApiDescription uses the
@@ -60,23 +60,5 @@ internal sealed class StrictIdOperationTransformer
 		}
 
 		return Task.CompletedTask;
-	}
-
-	private static StrictIdSchemaBuilder.SchemaFields? ResolveFields (Type clrType)
-	{
-		if (clrType == typeof(Id)) return StrictIdSchemaBuilder.BuildForUlid(entityType: null);
-		if (clrType == typeof(IdNumber)) return StrictIdSchemaBuilder.BuildForNumber(entityType: null);
-		if (clrType == typeof(IdString)) return StrictIdSchemaBuilder.BuildForString(entityType: null);
-
-		if (!clrType.IsGenericType) return null;
-
-		var openDefinition = clrType.GetGenericTypeDefinition();
-		var entityType = clrType.GetGenericArguments()[0];
-
-		if (openDefinition == typeof(Id<>)) return StrictIdSchemaBuilder.BuildForUlid(entityType);
-		if (openDefinition == typeof(IdNumber<>)) return StrictIdSchemaBuilder.BuildForNumber(entityType);
-		if (openDefinition == typeof(IdString<>)) return StrictIdSchemaBuilder.BuildForString(entityType);
-
-		return null;
 	}
 }

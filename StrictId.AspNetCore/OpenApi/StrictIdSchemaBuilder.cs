@@ -50,6 +50,34 @@ internal static class StrictIdSchemaBuilder
 	}
 
 	/// <summary>
+	/// Returns the schema fields to write for <paramref name="clrType"/> if it is one
+	/// of the six StrictId shapes (three families × generic/non-generic), or
+	/// <see langword="null"/> otherwise. Centralises the type-matching logic so both
+	/// OpenAPI transformers (body/response and path/query parameter) share a single
+	/// dispatch table.
+	/// </summary>
+	public static SchemaFields? TryBuildFor (Type clrType)
+	{
+		// Non-generic families — direct type check.
+		if (clrType == typeof(Id)) return BuildForUlid(entityType: null);
+		if (clrType == typeof(IdNumber)) return BuildForNumber(entityType: null);
+		if (clrType == typeof(IdString)) return BuildForString(entityType: null);
+
+		// Generic families — compare open generic definition, then peel the entity
+		// type off the first (and only) type argument.
+		if (!clrType.IsGenericType) return null;
+
+		var openDefinition = clrType.GetGenericTypeDefinition();
+		var entityType = clrType.GetGenericArguments()[0];
+
+		if (openDefinition == typeof(Id<>)) return BuildForUlid(entityType);
+		if (openDefinition == typeof(IdNumber<>)) return BuildForNumber(entityType);
+		if (openDefinition == typeof(IdString<>)) return BuildForString(entityType);
+
+		return null;
+	}
+
+	/// <summary>
 	/// Builds the schema fields for <see cref="Id{T}"/> where <paramref name="entityType"/>
 	/// is the closed phantom tag, or for the non-generic <see cref="Id"/> when
 	/// <paramref name="entityType"/> is <see langword="null"/>.
