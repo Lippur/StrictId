@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <PackageId>StrictId</PackageId>
-        <Version>3.0.0-preview.2</Version>
+        <Version>3.0.0-preview.3</Version>
         <Authors>K. Lippur</Authors>
         <WebPage>https://github.com/Lippur/StrictId</WebPage>
         <PackageTags>Id;Ulid;Guid;Entity;Entity Framework Core;EFCore</PackageTags>
@@ -35,6 +35,7 @@
 
     <ItemGroup>
       <InternalsVisibleTo Include="StrictId.Test" />
+      <InternalsVisibleTo Include="StrictId.AspNetCore" />
     </ItemGroup>
 
     <ItemGroup>

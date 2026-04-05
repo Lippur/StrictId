@@ -1,0 +1,59 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+    <PropertyGroup>
+        <TargetFramework>net10.0</TargetFramework>
+        <ImplicitUsings>enable</ImplicitUsings>
+        <Nullable>enable</Nullable>
+        <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    </PropertyGroup>
+
+    <PropertyGroup>
+        <PackageId>StrictId.AspNetCore</PackageId>
+        <Version>3.0.0-preview.3</Version>
+        <Authors>K. Lippur</Authors>
+        <WebPage>https://github.com/Lippur/StrictId</WebPage>
+        <PackageTags>Id;Ulid;Guid;AspNetCore;OpenAPI;Routing</PackageTags>
+        <Description>
+            ASP.NET Core integration for StrictId: OpenAPI schema generation with per-type
+            patterns and examples, route constraints, legacy TypeConverter support, and
+            ProblemDetails mapping for parse-failure binding errors. Route binding is free
+            via ISpanParsable&lt;T&gt; in .NET 7+; this package adds the polish.
+        </Description>
+        <PackageLicenseExpression>MIT</PackageLicenseExpression>
+        <RepositoryUrl>https://github.com/Lippur/StrictId</RepositoryUrl>
+        <RepositoryType>git</RepositoryType>
+        <PublishRepositoryUrl>true</PublishRepositoryUrl>
+        <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>
+            v3 preview 3. Adds the StrictId.AspNetCore package alongside the existing
+            StrictId + StrictId.EFCore. Ships an OpenAPI schema transformer that emits
+            string schemas with per-closed-generic pattern and example, three route
+            constraints (id, idnumber, idstring), TypeConverter subclasses for legacy
+            model binding, and a ProblemDetails mapping for FormatException raised
+            during StrictId model binding.
+        </PackageReleaseNotes>
+    </PropertyGroup>
+
+    <ItemGroup>
+        <FrameworkReference Include="Microsoft.AspNetCore.App"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <PackageReference Include="Microsoft.AspNetCore.OpenApi" Version="10.0.5"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <ProjectReference Include="..\StrictId\StrictId.csproj"/>
+    </ItemGroup>
+
+    <ItemGroup>
+        <None Include="../README.md">
+            <Pack>true</Pack>
+            <PackagePath>\</PackagePath>
+        </None>
+        <None Include="../assets/StrictId-Light.svg;../assets/StrictId-Dark.svg">
+            <Pack>true</Pack>
+            <PackagePath>assets\</PackagePath>
+        </None>
+    </ItemGroup>
+</Project>

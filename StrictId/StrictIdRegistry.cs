@@ -102,4 +102,13 @@ public static class StrictIdRegistry
 		converter = null;
 		return false;
 	}
+
+	/// <summary>
+	/// Enumerates every entity type currently registered in the prefix table. Used by
+	/// <c>StrictId.AspNetCore</c> to walk the set of source-gen-visible entities when
+	/// wiring legacy <see cref="System.ComponentModel.TypeConverter"/> attributes, since
+	/// those attributes have to be attached per closed generic and the registry is the
+	/// authoritative list of those closings.
+	/// </summary>
+	internal static IEnumerable<Type> EnumerateRegisteredEntityTypes () => PrefixRegistry.Keys;
 }
