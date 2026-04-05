@@ -173,11 +173,11 @@ public class IdOfTTests
 		var colon = Id<Widget>.Parse($"widget:{SampleUlidLower}");
 		var underscore = Id<Widget>.Parse($"widget_{SampleUlidLower}");
 		var slash = Id<Widget>.Parse($"widget/{SampleUlidLower}");
-		var backslash = Id<Widget>.Parse($"widget\\{SampleUlidLower}");
+		var period = Id<Widget>.Parse($"widget.{SampleUlidLower}");
 
 		colon.Should().Be(underscore);
 		underscore.Should().Be(slash);
-		slash.Should().Be(backslash);
+		slash.Should().Be(period);
 	}
 
 	[Test]

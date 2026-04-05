@@ -63,7 +63,7 @@ internal static class IdFormatter
 
 	/// <summary>
 	/// UTF-8 formatting entry point. Every character produced by a StrictId canonical
-	/// form is ASCII (Crockford base32, lowercase hex, underscore/slash/backslash/colon),
+	/// form is ASCII (Crockford base32, lowercase hex, underscore/slash/period/colon),
 	/// so we can format into a <c>char</c> buffer and then widen 1:1 into the UTF-8 span.
 	/// </summary>
 	public static bool TryFormat (

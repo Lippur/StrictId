@@ -15,14 +15,16 @@ namespace StrictId.EFCore.Conventions;
 /// <see cref="IdStringAttribute"/> on the entity type.
 /// </summary>
 /// <remarks>
-/// The convention closes the open-generic converter types with the property's closed
-/// generic argument, which requires <c>Type.MakeGenericType</c> on the runtime
-/// reflection path. This is tolerable at model-build time but not AOT-friendly; Phase 8
-/// of the v3 rewrite will replace the reflection path with a source-generator that
-/// emits direct instantiations per closed generic.
+/// <para>
+/// The convention first consults <see cref="StrictIdEfCoreRegistry"/> for a
+/// pre-constructed <see cref="ValueConverter"/>. Entries are populated by the StrictId
+/// source generator for every <c>[IdPrefix]</c>-decorated type visible at compile time,
+/// which keeps the hot model-build path free of <see cref="Type.MakeGenericType(Type[])"/>
+/// and its associated trim / AOT warnings. On a miss the convention falls back to
+/// <see cref="Activator.CreateInstance(Type)"/> on a closed generic, which is still
+/// functionally correct but is annotated as dynamic-code-dependent.
+/// </para>
 /// </remarks>
-[RequiresDynamicCode("StrictId's EF Core convention closes open-generic converters with runtime type arguments.")]
-[RequiresUnreferencedCode("StrictId's EF Core convention closes open-generic converters with runtime type arguments.")]
 public class IdConvention : IPropertyAddedConvention
 {
 	/// <inheritdoc />
@@ -39,7 +41,7 @@ public class IdConvention : IPropertyAddedConvention
 
 		if (definition == typeof(Id<>))
 		{
-			var converter = CreateConverter(typeof(IdToStringConverter<>), typeArgument);
+			var converter = ResolveConverter(clrType, typeof(IdToStringConverter<>), typeArgument);
 			propertyBuilder
 				.HasConversion(converter)
 				?.HasMaxLength(26)
@@ -47,19 +49,33 @@ public class IdConvention : IPropertyAddedConvention
 		}
 		else if (definition == typeof(IdNumber<>))
 		{
-			var converter = CreateConverter(typeof(IdNumberToLongConverter<>), typeArgument);
+			var converter = ResolveConverter(clrType, typeof(IdNumberToLongConverter<>), typeArgument);
 			propertyBuilder.HasConversion(converter);
 		}
 		else if (definition == typeof(IdString<>))
 		{
 			var (maxLength, asciiOnly) = ResolveIdStringColumnHints(typeArgument);
-			var converter = CreateConverter(typeof(IdStringToStringConverter<>), typeArgument);
+			var converter = ResolveConverter(clrType, typeof(IdStringToStringConverter<>), typeArgument);
 			var chain = propertyBuilder.HasConversion(converter)?.HasMaxLength(maxLength);
 			if (asciiOnly) chain?.IsUnicode(false);
 		}
 	}
 
-	private static ValueConverter? CreateConverter (Type openGenericConverter, Type typeArgument)
+	/// <summary>
+	/// Returns a <see cref="ValueConverter"/> for <paramref name="closedIdType"/>. First
+	/// consults <see cref="StrictIdEfCoreRegistry"/> for a source-generated instance; on
+	/// miss, falls back to closing the open-generic converter via reflection.
+	/// </summary>
+	private static ValueConverter? ResolveConverter (Type closedIdType, Type openGenericConverter, Type typeArgument)
+	{
+		if (StrictIdEfCoreRegistry.TryGetValueConverter(closedIdType, out var cached))
+			return cached;
+		return CreateConverterViaReflection(openGenericConverter, typeArgument);
+	}
+
+	[RequiresDynamicCode("StrictId's EF Core convention falls back to Activator.CreateInstance + MakeGenericType when the StrictId source generator did not produce a concrete converter for this closed id type. Decorate the entity with [IdPrefix] (or register manually via StrictIdEfCoreRegistry.RegisterValueConverter) to stay on the AOT-friendly path.")]
+	[RequiresUnreferencedCode("StrictId's EF Core convention falls back to reflection on closed generic converter types when no pre-registered converter exists.")]
+	private static ValueConverter? CreateConverterViaReflection (Type openGenericConverter, Type typeArgument)
 		=> (ValueConverter?)Activator.CreateInstance(openGenericConverter.MakeGenericType(typeArgument));
 
 	/// <summary>

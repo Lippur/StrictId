@@ -102,7 +102,7 @@ public class IdNumberOfTTests
 		IdNumber<Widget>.Parse("widget:42").Value.Should().Be(42UL);
 		IdNumber<Widget>.Parse("widget_42").Value.Should().Be(42UL);
 		IdNumber<Widget>.Parse("widget/42").Value.Should().Be(42UL);
-		IdNumber<Widget>.Parse("widget\\42").Value.Should().Be(42UL);
+		IdNumber<Widget>.Parse("widget.42").Value.Should().Be(42UL);
 	}
 
 	[Test]

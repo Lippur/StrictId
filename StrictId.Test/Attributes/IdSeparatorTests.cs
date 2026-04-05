@@ -7,7 +7,7 @@ public class IdSeparatorTests
 {
 	[TestCase(IdSeparator.Underscore, '_')]
 	[TestCase(IdSeparator.Slash, '/')]
-	[TestCase(IdSeparator.Backslash, '\\')]
+	[TestCase(IdSeparator.Period, '.')]
 	[TestCase(IdSeparator.Colon, ':')]
 	public void ToChar_ReturnsExpectedCharacter (IdSeparator separator, char expected)
 	{
@@ -26,7 +26,7 @@ public class IdSeparatorTests
 
 	[TestCase('_', IdSeparator.Underscore)]
 	[TestCase('/', IdSeparator.Slash)]
-	[TestCase('\\', IdSeparator.Backslash)]
+	[TestCase('.', IdSeparator.Period)]
 	[TestCase(':', IdSeparator.Colon)]
 	public void TryFromChar_RecognisesValidSeparators (char c, IdSeparator expected)
 	{
@@ -35,7 +35,7 @@ public class IdSeparatorTests
 	}
 
 	[TestCase('-')]
-	[TestCase('.')]
+	[TestCase('\\')]
 	[TestCase(' ')]
 	[TestCase('#')]
 	[TestCase('a')]

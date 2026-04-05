@@ -169,7 +169,7 @@ internal static class IdParser
 
 		var sepChar = prefixPortion[^1];
 		if (!IdSeparators.TryFromChar(sepChar, out _))
-			return $"expected a separator character (one of _ / \\ :) before the suffix, but found '{sepChar}'.";
+			return $"expected a separator character (one of _ / . :) before the suffix, but found '{sepChar}'.";
 
 		var prefixText = prefixPortion[..^1];
 		if (prefixText.IsEmpty)

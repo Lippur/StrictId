@@ -23,6 +23,12 @@
         <PackageReadmeFile>README.md</PackageReadmeFile>
     </PropertyGroup>
     
+    <PropertyGroup>
+        <!-- Hook the generator DLL into TfmSpecificPackageFile so `dotnet pack` ships
+             it under analyzers/dotnet/cs/ inside the StrictId NuGet. -->
+        <TargetsForTfmSpecificContentInPackage>$(TargetsForTfmSpecificContentInPackage);_AddStrictIdGeneratorToPackage</TargetsForTfmSpecificContentInPackage>
+    </PropertyGroup>
+
     <ItemGroup>
       <PackageReference Include="Ulid" Version="1.4.1" />
     </ItemGroup>
@@ -30,7 +36,18 @@
     <ItemGroup>
       <InternalsVisibleTo Include="StrictId.Test" />
     </ItemGroup>
-    
+
+    <ItemGroup>
+      <!-- The generator ships inside this package as an analyzer, not as a runtime
+           dependency. ReferenceOutputAssembly=false so StrictId.dll does not take a
+           runtime reference on StrictId.Generators.dll; OutputItemType=Analyzer so
+           the generator runs against consumers' compilations. -->
+      <ProjectReference Include="..\StrictId.Generators\StrictId.Generators.csproj"
+                        OutputItemType="Analyzer"
+                        ReferenceOutputAssembly="false"
+                        PrivateAssets="all" />
+    </ItemGroup>
+
     <ItemGroup>
         <None Include="../README.md">
             <Pack>true</Pack>
@@ -41,4 +58,11 @@
             <PackagePath>assets\</PackagePath>
         </None>
     </ItemGroup>
+
+    <Target Name="_AddStrictIdGeneratorToPackage" DependsOnTargets="ResolveProjectReferences">
+        <ItemGroup>
+            <TfmSpecificPackageFile Include="$(MSBuildThisFileDirectory)..\StrictId.Generators\bin\$(Configuration)\netstandard2.0\StrictId.Generators.dll"
+                                    PackagePath="analyzers/dotnet/cs" />
+        </ItemGroup>
+    </Target>
 </Project>

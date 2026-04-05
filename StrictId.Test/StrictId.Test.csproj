@@ -32,6 +32,13 @@
     <ItemGroup>
       <ProjectReference Include="..\StrictId\StrictId.csproj" />
       <ProjectReference Include="..\StrictId.EFCore\StrictId.EFCore.csproj" />
+      <!-- Direct analyzer reference so the generator runs against this project in the
+           local dev loop. Shipped to NuGet consumers automatically via the analyzers/
+           folder inside the StrictId package, so this reference is only needed for
+           in-repo work. -->
+      <ProjectReference Include="..\StrictId.Generators\StrictId.Generators.csproj"
+                        OutputItemType="Analyzer"
+                        ReferenceOutputAssembly="false" />
     </ItemGroup>
 
 </Project>

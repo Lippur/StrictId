@@ -62,7 +62,7 @@ internal static class IdStringValidator
 		if (char.IsControl(c) || char.IsWhiteSpace(c)) return false;
 		// Exclude the four IdSeparator characters so the suffix can never collide
 		// with its own separator during round-tripping.
-		return c is not ('_' or '/' or '\\' or ':');
+		return c is not ('_' or '/' or '.' or ':');
 	}
 
 	private static bool IsAsciiAlphanumeric (char c)

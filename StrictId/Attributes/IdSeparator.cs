@@ -21,10 +21,10 @@ public enum IdSeparator
 	Slash,
 
 	/// <summary>
-	/// Backslash (<c>\</c>). Niche. Useful when colon or slash would collide with
-	/// another surrounding format.
+	/// Period (<c>.</c>). Reads naturally as a namespace separator, as in
+	/// <c>user.42</c> or <c>tenant.order.7</c>.
 	/// </summary>
-	Backslash,
+	Period,
 
 	/// <summary>
 	/// Colon (<c>:</c>). Common in namespaced IDs such as <c>user:42</c>.
@@ -47,7 +47,7 @@ public static class IdSeparators
 	{
 		IdSeparator.Underscore => '_',
 		IdSeparator.Slash => '/',
-		IdSeparator.Backslash => '\\',
+		IdSeparator.Period => '.',
 		IdSeparator.Colon => ':',
 		_ => throw new ArgumentOutOfRangeException(nameof(separator), separator, "Not a valid IdSeparator value."),
 	};
@@ -70,7 +70,7 @@ public static class IdSeparators
 		{
 			case '_': separator = IdSeparator.Underscore; return true;
 			case '/': separator = IdSeparator.Slash; return true;
-			case '\\': separator = IdSeparator.Backslash; return true;
+			case '.': separator = IdSeparator.Period; return true;
 			case ':': separator = IdSeparator.Colon; return true;
 			default: separator = default; return false;
 		}

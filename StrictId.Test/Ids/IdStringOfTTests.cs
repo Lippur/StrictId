@@ -162,7 +162,7 @@ public class IdStringOfTTests
 		// Any of the four separators is accepted on parse.
 		IdString<Customer>.Parse("cus_abc").Value.Should().Be("abc");
 		IdString<Customer>.Parse("cus/abc").Value.Should().Be("abc");
-		IdString<Customer>.Parse("cus\\abc").Value.Should().Be("abc");
+		IdString<Customer>.Parse("cus.abc").Value.Should().Be("abc");
 		IdString<Customer>.Parse("cus:abc").Value.Should().Be("abc");
 	}
 

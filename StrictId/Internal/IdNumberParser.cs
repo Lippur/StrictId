@@ -104,7 +104,7 @@ internal static class IdNumberParser
 
 		var sepChar = input[digitStart - 1];
 		if (!IdSeparators.TryFromChar(sepChar, out _))
-			return $"expected a separator character (one of _ / \\ :) before the digits, but found '{sepChar}'.";
+			return $"expected a separator character (one of _ / . :) before the digits, but found '{sepChar}'.";
 
 		var prefixText = input[..(digitStart - 1)];
 		if (prefixText.IsEmpty)

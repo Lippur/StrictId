@@ -7,17 +7,23 @@ namespace StrictId.Internal;
 /// attribute wins, and base-type declarations are hidden rather than merged.
 /// </summary>
 /// <remarks>
-/// This is the runtime fallback path. In AOT or performance-sensitive scenarios, the
-/// StrictId source generator emits pre-validated metadata per closed generic so that
-/// this reflection path is never hit; see the source generator documentation for details.
+/// This is the runtime fallback path. The StrictId source generator emits pre-resolved
+/// metadata into <see cref="StrictIdRegistry"/> at module initialisation time so that
+/// closed generics whose entity types were visible at compile time skip this reflection
+/// path entirely. When the generator is disabled (via the MSBuild property
+/// <c>EnableStrictIdSourceGenerator=false</c>) or the entity type is defined in an
+/// assembly the generator did not see, the resolver falls back to walking the attributes
+/// with reflection so the library still works at full correctness.
 /// </remarks>
 internal static class StrictIdMetadataResolver
 {
 	/// <summary>
 	/// Resolves the prefix and separator metadata for the given entity <paramref name="type"/>.
-	/// Validates prefix grammar, default cardinality, and uniqueness on the fly; throws
-	/// <see cref="InvalidOperationException"/> with a verbose, developer-oriented message
-	/// if the attribute declarations on <paramref name="type"/> are malformed.
+	/// First consults <see cref="StrictIdRegistry"/> for a pre-resolved entry (emitted by
+	/// the source generator); on miss, validates prefix grammar, default cardinality, and
+	/// uniqueness on the fly via reflection and throws <see cref="InvalidOperationException"/>
+	/// with a verbose, developer-oriented message if the attribute declarations on
+	/// <paramref name="type"/> are malformed.
 	/// </summary>
 	/// <param name="type">The entity type to resolve.</param>
 	/// <returns>The resolved <see cref="PrefixInfo"/>. Never <see langword="null"/>.</returns>
@@ -27,6 +33,9 @@ internal static class StrictIdMetadataResolver
 	/// </exception>
 	public static PrefixInfo ResolvePrefix (Type type)
 	{
+		if (StrictIdRegistry.TryGetPrefix(type, out var registered))
+			return registered;
+
 		var (prefixAttrs, separatorAttr) = WalkPrefixAndSeparator(type);
 		var separator = separatorAttr?.Separator ?? IdSeparator.Underscore;
 
@@ -85,11 +94,15 @@ internal static class StrictIdMetadataResolver
 
 	/// <summary>
 	/// Resolves the <see cref="IdStringOptions"/> for the given entity <paramref name="type"/>.
-	/// Walks the inheritance chain for the first <see cref="IdStringAttribute"/> declaration;
-	/// returns <see cref="IdStringOptions.Default"/> if none is found.
+	/// Consults <see cref="StrictIdRegistry"/> first; on miss, walks the inheritance chain
+	/// for the first <see cref="IdStringAttribute"/> declaration. Returns
+	/// <see cref="IdStringOptions.Default"/> if none is found.
 	/// </summary>
 	public static IdStringOptions ResolveStringOptions (Type type)
 	{
+		if (StrictIdRegistry.TryGetStringOptions(type, out var registered))
+			return registered;
+
 		Type? current = type;
 		while (current is not null)
 		{
