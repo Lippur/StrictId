@@ -10,8 +10,8 @@ namespace StrictId;
 /// <remarks>
 /// A valid prefix matches <c>^[a-z][a-z0-9_]{0,62}$</c> — a lowercase ASCII letter
 /// followed by up to 62 additional lowercase alphanumeric or underscore characters
-/// (63 characters maximum). Grammar is validated by the StrictId analyzer at compile
-/// time and by the runtime prefix metadata resolver on first access, as a defense in
+/// (63 characters maximum). Grammar is validated by the StrictId analyser at compile
+/// time and by the runtime prefix metadata resolver on first access, as a defence in
 /// depth.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = true)]

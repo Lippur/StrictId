@@ -1,6 +1,8 @@
 using System.Diagnostics;
 using System.Runtime.Serialization;
+using System.Text.Json.Serialization;
 using StrictId.Internal;
+using StrictId.Json;
 
 namespace StrictId;
 
@@ -15,7 +17,7 @@ namespace StrictId;
 /// for the numeric family. Numeric IDs come from the database (via EF Core's identity
 /// columns) or from the user's own code.
 /// </remarks>
-[DebuggerDisplay("{ToString(),nq}")]
+[DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdNumberJsonConverter))]
 public readonly record struct IdNumber (ulong Value) : IStrictId<IdNumber>, IComparable
 {
 	/// <summary>Creates an <see cref="IdNumber"/> from a signed 32-bit integer.</summary>
