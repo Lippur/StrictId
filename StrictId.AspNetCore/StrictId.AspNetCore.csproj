@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <PackageId>StrictId.AspNetCore</PackageId>
-        <Version>3.0.0-preview.3</Version>
+        <Version>3.0.0</Version>
         <Authors>K. Lippur</Authors>
         <WebPage>https://github.com/Lippur/StrictId</WebPage>
         <PackageTags>Id;Ulid;Guid;AspNetCore;OpenAPI;Routing</PackageTags>
@@ -25,12 +25,14 @@
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
         <PackageReleaseNotes>
-            v3 preview 3. Adds the StrictId.AspNetCore package alongside the existing
-            StrictId + StrictId.EFCore. Ships an OpenAPI schema transformer that emits
-            string schemas with per-closed-generic pattern and example, three route
-            constraints (id, idnumber, idstring), TypeConverter subclasses for legacy
-            model binding, and a ProblemDetails mapping for FormatException raised
-            during StrictId model binding.
+            v3.0.0. New package in the StrictId family. Ships an OpenAPI schema
+            transformer and operation transformer that emit string schemas with per-
+            closed-generic pattern, example, and description; three route constraints
+            (id, idnumber, idstring); TypeConverter subclasses for legacy model binding;
+            and a ProblemDetails mapping for StrictId FormatExceptions raised during
+            model binding. Route binding via ISpanParsable&lt;T&gt; works out of the box in
+            .NET 7+; this package adds the polish. One-liner wire-up via
+            services.AddStrictId(). See CHANGELOG.md in the StrictId repo for details.
         </PackageReleaseNotes>
     </PropertyGroup>
 
