@@ -88,8 +88,10 @@ public class StrictIdGeneratorTests
 	}
 
 	[Test]
-	public void InvalidPrefixGrammar_EmitsDiagnosticAndSkipsRegistration ()
+	public void InvalidPrefixGrammar_IsSilentlySkipped ()
 	{
+		// STRID003 in StrictIdAttributeAnalyzer surfaces the grammar error to the
+		// user; the generator's job is just to refuse to emit a broken registration.
 		var result = GeneratorRunner.Run("""
 			using StrictId;
 			namespace MyApp;
@@ -97,9 +99,7 @@ public class StrictIdGeneratorTests
 			public class BadType { }
 			""");
 
-		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID101");
-		// Generator still emits the source file so the module initializer is registered,
-		// but with no body for the invalid type.
+		result.Diagnostics.Should().BeEmpty();
 		if (result.GeneratedSources.Length > 0)
 		{
 			result.GeneratedSources[0].Should().NotContain("RegisterPrefix<global::MyApp.BadType>");
@@ -107,8 +107,9 @@ public class StrictIdGeneratorTests
 	}
 
 	[Test]
-	public void MultiplePrefixesWithoutDefault_EmitsDiagnostic ()
+	public void MultiplePrefixesWithoutDefault_IsSilentlySkipped ()
 	{
+		// STRID003 reports the "no default" case; generator just stays silent.
 		var result = GeneratorRunner.Run("""
 			using StrictId;
 			namespace MyApp;
@@ -117,11 +118,15 @@ public class StrictIdGeneratorTests
 			public class Ambiguous { }
 			""");
 
-		result.Diagnostics.Should().Contain(d => d.Id == "STRID103");
+		result.Diagnostics.Should().BeEmpty();
+		if (result.GeneratedSources.Length > 0)
+		{
+			result.GeneratedSources[0].Should().NotContain("RegisterPrefix<global::MyApp.Ambiguous>");
+		}
 	}
 
 	[Test]
-	public void MultipleDefaults_EmitsDiagnostic ()
+	public void MultipleDefaults_IsSilentlySkipped ()
 	{
 		var result = GeneratorRunner.Run("""
 			using StrictId;
@@ -131,7 +136,11 @@ public class StrictIdGeneratorTests
 			public class Ambiguous { }
 			""");
 
-		result.Diagnostics.Should().Contain(d => d.Id == "STRID104");
+		result.Diagnostics.Should().BeEmpty();
+		if (result.GeneratedSources.Length > 0)
+		{
+			result.GeneratedSources[0].Should().NotContain("RegisterPrefix<global::MyApp.Ambiguous>");
+		}
 	}
 
 	[Test]
@@ -211,11 +220,11 @@ public class StrictIdGeneratorTests
 	}
 
 	[Test]
-	public void DiagnosticType_DoesNotEmitJsonRegistrations ()
+	public void InvalidPrefixType_DoesNotEmitJsonRegistrations ()
 	{
-		// Invalid grammar causes the descriptor to be flagged with a diagnostic; the
-		// generator must not emit JSON registrations for diagnostic-bearing types
-		// because the type symbol would compile but the conceptual contract is broken.
+		// Invalid grammar causes the descriptor to be filtered; the generator must
+		// not emit JSON (or EF) registrations for such types, because the analyzer
+		// will surface the error and the registration would never be valid anyway.
 		var result = GeneratorRunner.Run("""
 			using StrictId;
 			namespace MyApp;
@@ -223,7 +232,7 @@ public class StrictIdGeneratorTests
 			public class Bad { }
 			""");
 
-		result.Diagnostics.Should().Contain(d => d.Id == "STRID101");
+		result.Diagnostics.Should().BeEmpty();
 		if (result.GeneratedSources.Length > 0)
 		{
 			result.GeneratedSources[0].Should().NotContain("RegisterJsonConverter<global::StrictId.Id<global::MyApp.Bad>>");

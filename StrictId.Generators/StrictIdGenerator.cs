@@ -2,7 +2,6 @@ using System.Collections.Immutable;
 using System.Text;
 using Microsoft.CodeAnalysis;
 using Microsoft.CodeAnalysis.CSharp.Syntax;
-using StrictId.Generators.Diagnostics;
 
 namespace StrictId.Generators;
 
@@ -101,15 +100,9 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 			// Private/protected nested types (typically test fixtures) can't be named
 			// from a top-level namespace, so we skip them. They still work correctly at
 			// runtime via the reflection fallback.
-			return new PrefixDescriptor(
-				FullyQualifiedName: string.Empty,
-				EscapedIdentifier: string.Empty,
-				Prefixes: EquatableArray<PrefixDeclaration>.Empty,
-				SeparatorEnumMember: "Underscore",
-				Diagnostics: EquatableArray<DiagnosticData>.Empty);
+			return EmptyDescriptor();
 		}
 
-		var diagnostics = ImmutableArray.CreateBuilder<DiagnosticData>();
 		var declarations = ImmutableArray.CreateBuilder<PrefixDeclaration>();
 
 		foreach (var attrData in syntaxContext.Attributes)
@@ -119,6 +112,14 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 			if (attrData.ConstructorArguments.Length == 0) continue;
 
 			var prefix = attrData.ConstructorArguments[0].Value as string;
+			if (prefix is null) continue;
+
+			// Invalid grammar: silently skip this declaration. STRID003 (in
+			// StrictIdAttributeAnalyzer) surfaces the error to the user; the generator
+			// just refuses to emit a registration that would produce an unusable
+			// runtime state.
+			if (PrefixValidator.ValidateGrammar(prefix) is not null) continue;
+
 			var isDefault = false;
 			foreach (var named in attrData.NamedArguments)
 			{
@@ -129,24 +130,37 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 				}
 			}
 
-			if (prefix is null) continue;
-
-			if (!TryValidatePrefix(prefix, out var reason))
-			{
-				diagnostics.Add(BuildDiagnostic(
-					DiagnosticDescriptors.InvalidPrefixGrammar,
-					attrData,
-					target,
-					prefix,
-					target.ToDisplayString(),
-					reason));
-				continue;
-			}
-
 			declarations.Add(new PrefixDeclaration(prefix, isDefault));
 		}
 
-		ValidateCardinality(declarations, target, syntaxContext.Attributes, diagnostics);
+		// Drop duplicates silently (analyzer reports them). Keep the first occurrence
+		// to preserve declaration order.
+		var seenPrefixes = new HashSet<string>(StringComparer.Ordinal);
+		for (var i = 0; i < declarations.Count; i++)
+		{
+			if (!seenPrefixes.Add(declarations[i].Prefix))
+			{
+				declarations.RemoveAt(i);
+				i--;
+			}
+		}
+
+		// If no prefix survived grammar validation, the user's [IdPrefix] declaration
+		// is entirely broken. Filter the whole type out so no downstream (JSON, EF)
+		// registrations attach to it; the analyzer surfaces the grammar error.
+		if (declarations.Count == 0) return EmptyDescriptor();
+
+		// If multiple prefixes remain and there isn't exactly one IsDefault, don't
+		// emit — the analyzer reports the mismatch and the generator stays silent
+		// rather than picking an arbitrary canonical.
+		if (declarations.Count > 1)
+		{
+			var defaults = 0;
+			foreach (var d in declarations)
+				if (d.IsDefault)
+					defaults++;
+			if (defaults != 1) return EmptyDescriptor();
+		}
 
 		// Locate an [IdSeparator] on the target, if any. The attribute lives on the same
 		// symbol but is discovered via GetAttributes() since our provider keyed on
@@ -158,87 +172,14 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 			FullyQualifiedName: target.ToDisplayString(SymbolDisplayFormat.FullyQualifiedFormat),
 			EscapedIdentifier: BuildSanitisedIdentifier(target),
 			Prefixes: new EquatableArray<PrefixDeclaration>(declarations.ToImmutable()),
-			SeparatorEnumMember: separator,
-			Diagnostics: new EquatableArray<DiagnosticData>(diagnostics.ToImmutable()));
+			SeparatorEnumMember: separator);
 	}
 
-	private static bool TryValidatePrefix (string prefix, out string reason)
-	{
-		if (prefix.Length == 0)
-		{
-			reason = "prefix is empty";
-			return false;
-		}
-		if (prefix.Length > 63)
-		{
-			reason = $"prefix is {prefix.Length} characters long (max 63)";
-			return false;
-		}
-		var first = prefix[0];
-		if (first is < 'a' or > 'z')
-		{
-			reason = $"first character '{first}' is not a lowercase ASCII letter";
-			return false;
-		}
-		for (var i = 1; i < prefix.Length; i++)
-		{
-			var c = prefix[i];
-			if (c is >= 'a' and <= 'z' or >= '0' and <= '9' or '_') continue;
-			reason = $"contains '{c}' at position {i}";
-			return false;
-		}
-		reason = string.Empty;
-		return true;
-	}
-
-	private static void ValidateCardinality (
-		ImmutableArray<PrefixDeclaration>.Builder declarations,
-		INamedTypeSymbol target,
-		ImmutableArray<AttributeData> attributes,
-		ImmutableArray<DiagnosticData>.Builder diagnostics)
-	{
-		// Duplicate check.
-		var seen = new HashSet<string>(StringComparer.Ordinal);
-		for (var i = declarations.Count - 1; i >= 0; i--)
-		{
-			if (!seen.Add(declarations[i].Prefix))
-			{
-				diagnostics.Add(BuildDiagnostic(
-					DiagnosticDescriptors.DuplicatePrefix,
-					attributes[0],
-					target,
-					declarations[i].Prefix,
-					target.ToDisplayString()));
-				declarations.RemoveAt(i);
-			}
-		}
-
-		if (declarations.Count <= 1) return;
-
-		var defaults = 0;
-		foreach (var d in declarations)
-			if (d.IsDefault)
-				defaults++;
-
-		if (defaults == 0)
-		{
-			diagnostics.Add(BuildDiagnostic(
-				DiagnosticDescriptors.NoDefaultPrefix,
-				attributes[0],
-				target,
-				target.ToDisplayString(),
-				declarations.Count.ToString()));
-		}
-		else if (defaults > 1)
-		{
-			diagnostics.Add(BuildDiagnostic(
-				DiagnosticDescriptors.MultipleDefaultPrefixes,
-				attributes[0],
-				target,
-				target.ToDisplayString(),
-				defaults.ToString()));
-		}
-	}
+	private static PrefixDescriptor EmptyDescriptor () => new(
+		FullyQualifiedName: string.Empty,
+		EscapedIdentifier: string.Empty,
+		Prefixes: EquatableArray<PrefixDeclaration>.Empty,
+		SeparatorEnumMember: "Underscore");
 
 	private static string ReadSeparator (INamedTypeSymbol target)
 	{
@@ -328,16 +269,11 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		bool enabled,
 		bool efCoreAvailable)
 	{
-		// Always report diagnostics even when code emission is disabled — bad attributes
-		// should still surface in the IDE so users can fix them before flipping the
-		// generator back on.
-		foreach (var descriptor in prefixDescriptors)
-		{
-			foreach (var diag in descriptor.Diagnostics)
-			{
-				context.ReportDiagnostic(RehydrateDiagnostic(diag));
-			}
-		}
+		// STRID003/STRID004 diagnostics are surfaced by StrictIdAttributeAnalyzer rather
+		// than the generator; the generator's job is to emit correct code for the
+		// valid subset and stay silent about the invalid tail. Types that fail the
+		// grammar/cardinality checks surface as empty descriptors here and are
+		// filtered out in BuildSource.
 
 		if (!enabled) return;
 		if (prefixDescriptors.IsEmpty && stringDescriptors.IsEmpty) return;
@@ -365,16 +301,16 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		sb.AppendLine("        internal static void Initialize()");
 		sb.AppendLine("        {");
 
-		// Build the set of valid (accessible, diagnostic-free) entity type names so we
-		// can emit JSON + EF converter registrations for each one. Types with empty
-		// FullyQualifiedName were filtered during extraction (inaccessible); types with
-		// diagnostics are malformed and are skipped here to avoid generating broken code.
+		// Build the set of valid (accessible, well-formed) entity type names so we can
+		// emit JSON + EF converter registrations for each one. Types with empty
+		// FullyQualifiedName were filtered during extraction (inaccessible nesting,
+		// invalid grammar, or cardinality mismatch — the analyzer surfaces the last
+		// two as diagnostics).
 		var validEntityTypes = ImmutableArray.CreateBuilder<string>();
 
 		foreach (var descriptor in prefixDescriptors)
 		{
 			if (descriptor.FullyQualifiedName.Length == 0) continue;
-			if (!descriptor.Diagnostics.IsEmpty) continue;
 			EmitPrefixRegistration(sb, descriptor);
 			validEntityTypes.Add(descriptor.FullyQualifiedName);
 		}
@@ -568,38 +504,4 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		return sb.ToString();
 	}
 
-	// ═════ Diagnostic bridging ═══════════════════════════════════════════════
-
-	private static DiagnosticData BuildDiagnostic (
-		DiagnosticDescriptor descriptor,
-		AttributeData attr,
-		INamedTypeSymbol target,
-		params string[] messageArgs)
-	{
-		_ = attr;    // AttributeData is not equatable across generator runs. Phase 9
-		_ = target;  // analyzers will add rich locations; the scaffold reports at
-		//             Location.None so the cache remains stable.
-		var message = string.Format(descriptor.MessageFormat.ToString(), messageArgs);
-		return new DiagnosticData(
-			descriptor.Id,
-			descriptor.Title.ToString(),
-			message,
-			FileHint: string.Empty,
-			LineSpanStart: 0,
-			LineSpanLength: 0);
-	}
-
-	private static Diagnostic RehydrateDiagnostic (DiagnosticData data)
-	{
-		var descriptor = data.Id switch
-		{
-			"STRID101" => DiagnosticDescriptors.InvalidPrefixGrammar,
-			"STRID102" => DiagnosticDescriptors.DuplicatePrefix,
-			"STRID103" => DiagnosticDescriptors.NoDefaultPrefix,
-			"STRID104" => DiagnosticDescriptors.MultipleDefaultPrefixes,
-			_ => throw new InvalidOperationException($"Unknown diagnostic id {data.Id}."),
-		};
-
-		return Diagnostic.Create(descriptor, Location.None, data.Message);
-	}
 }

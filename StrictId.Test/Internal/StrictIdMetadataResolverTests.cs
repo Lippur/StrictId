@@ -1,6 +1,12 @@
 using FluentAssertions;
 using StrictId.Internal;
 
+// The test fixtures below deliberately declare malformed [IdPrefix] attributes to
+// exercise the runtime resolver's error paths. STRID003 (the compile-time analyzer
+// counterpart) correctly flags these as errors, so suppress the rule for this file
+// only — otherwise the test fixtures cannot compile.
+#pragma warning disable STRID003
+
 namespace StrictId.Test.Internal;
 
 [TestFixture]
