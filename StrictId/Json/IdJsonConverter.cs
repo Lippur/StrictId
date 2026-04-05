@@ -1,27 +1,36 @@
-﻿using System.Text.Json;
+using System.Text.Json;
 using System.Text.Json.Serialization;
 using Cysharp.Serialization.Json;
 
 namespace StrictId.Json;
 
+/// <summary>
+/// <see cref="JsonConverter{T}"/> for the non-generic <see cref="Id"/>. Serializes as the
+/// canonical ULID string and supports usage as a JSON object key.
+/// </summary>
 public class IdJsonConverter : JsonConverter<Id>
 {
 	private readonly UlidJsonConverter _ulidJsonConverter;
 
+	/// <summary>Creates a new <see cref="IdJsonConverter"/>.</summary>
 	public IdJsonConverter ()
 	{
 		_ulidJsonConverter = new UlidJsonConverter();
 	}
 
+	/// <inheritdoc />
 	public override Id Read (ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options) =>
 		new(_ulidJsonConverter.Read(ref reader, typeToConvert, options));
 
+	/// <inheritdoc />
 	public override void Write (Utf8JsonWriter writer, Id value, JsonSerializerOptions options) =>
 		_ulidJsonConverter.Write(writer, value.Value, options);
 
+	/// <inheritdoc />
 	public override void WriteAsPropertyName (Utf8JsonWriter writer, Id value, JsonSerializerOptions options)
 		=> writer.WritePropertyName(value.ToString());
-	
+
+	/// <inheritdoc />
 	public override Id ReadAsPropertyName (ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
 	{
 		if (reader.TokenType is not JsonTokenType.PropertyName)
@@ -31,11 +40,18 @@ public class IdJsonConverter : JsonConverter<Id>
 	}
 }
 
+/// <summary>
+/// <see cref="JsonConverterFactory"/> that produces a <see cref="JsonConverter{T}"/> for any
+/// closed <see cref="Id{T}"/> type. Serializes as the canonical ULID string and supports usage
+/// as a JSON object key.
+/// </summary>
 public class IdTypedJsonConverterFactory : JsonConverterFactory
 {
+	/// <inheritdoc />
 	public override bool CanConvert (Type typeToConvert) =>
 		typeToConvert.IsGenericType && typeToConvert.GetGenericTypeDefinition() == typeof(Id<>);
 
+	/// <inheritdoc />
 	public override JsonConverter? CreateConverter (Type typeToConvert, JsonSerializerOptions options) =>
 		(JsonConverter?)Activator.CreateInstance(
 			typeof(IdTypedJsonConverter<>).MakeGenericType(typeToConvert.GetGenericArguments().First())
