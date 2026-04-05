@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration;
 namespace StrictId.EFCore.ValueGenerators;
 
 /// <summary>
-/// EF Core value generator that produces a fresh ULID string via <see cref="Id.NewId"/>
+/// EF Core value generator that produces a fresh ULID string via <see cref="Id.NewId()"/>
 /// whenever a new entity is added. Useful for plain <see cref="string"/> columns that should
 /// receive StrictId-compatible values.
 /// </summary>

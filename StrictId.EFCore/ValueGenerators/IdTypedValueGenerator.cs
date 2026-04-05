@@ -6,7 +6,7 @@ namespace StrictId.EFCore.ValueGenerators;
 
 /// <summary>
 /// EF Core value generator that produces a fresh <see cref="Id{T}"/> via
-/// <see cref="Id{T}.NewId"/> whenever a new entity is added.
+/// <see cref="Id{T}.NewId()"/> whenever a new entity is added.
 /// </summary>
 public class IdTypedValueGenerator<T> : ValueGenerator<Id<T>>
 {

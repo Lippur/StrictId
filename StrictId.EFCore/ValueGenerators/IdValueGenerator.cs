@@ -5,7 +5,7 @@ using Microsoft.EntityFrameworkCore.ValueGeneration;
 namespace StrictId.EFCore.ValueGenerators;
 
 /// <summary>
-/// EF Core value generator that produces a fresh <see cref="Id"/> via <see cref="Id.NewId"/>
+/// EF Core value generator that produces a fresh <see cref="Id"/> via <see cref="Id.NewId()"/>
 /// whenever a new entity is added.
 /// </summary>
 public class IdValueGenerator : ValueGenerator<Id>
