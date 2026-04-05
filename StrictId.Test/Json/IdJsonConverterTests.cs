@@ -77,7 +77,7 @@ public class IdJsonConverterTests
 	[Test]
 	public void IdOfT_NoPrefix_SerializesAsBareUlid ()
 	{
-		var id = new Id<NoPrefix>("01hv0000000000000000000000");
+		var id = Id<NoPrefix>.Parse("01hv0000000000000000000000");
 		JsonSerializer.Serialize(id).Should().Be("\"01hv0000000000000000000000\"");
 	}
 

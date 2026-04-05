@@ -21,11 +21,6 @@ namespace StrictId;
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdJsonConverter))]
 public readonly record struct Id (Ulid Value) : IStrictId<Id>, IComparable
 {
-	/// <summary>Creates an <see cref="Id"/> by parsing the provided string.</summary>
-	/// <param name="value">A bare 26-char ULID or 36-char GUID.</param>
-	/// <exception cref="FormatException">The value is not a valid ULID or GUID.</exception>
-	public Id (string value) : this(Parse(value).Value) { }
-
 	/// <summary>Creates an <see cref="Id"/> from a <see cref="Guid"/>.</summary>
 	/// <param name="guid">The GUID to wrap.</param>
 	public Id (Guid guid) : this(new Ulid(guid)) { }

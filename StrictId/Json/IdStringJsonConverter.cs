@@ -12,17 +12,22 @@ namespace StrictId.Json;
 /// </summary>
 /// <remarks>
 /// <para>
-/// A default <see cref="IdString"/> (<see cref="IdString.Value"/> is <see langword="null"/>)
-/// is serialized as an empty JSON string <c>""</c>, matching the behavior of
-/// <see cref="object.ToString"/> on a default instance. On read, an empty JSON string
-/// round-trips back to <see langword="default"/> — an empty suffix cannot exist as a
-/// constructed <see cref="IdString"/>, so this convention is unambiguous.
+/// <b>Design note — default round-trip convention.</b> A default <see cref="IdString"/>
+/// (whose <see cref="IdString.Value"/> is <see langword="null"/>) serializes to an empty
+/// JSON string <c>""</c>, and an empty JSON string deserializes back to
+/// <see langword="default"/>. This convention is unambiguous because a *constructed*
+/// <see cref="IdString"/> can never have an empty suffix — the validating constructor
+/// rejects <c>""</c> — so the empty-string wire form is reserved for the default.
+/// <see cref="IdString"/> is the only StrictId family where the default-vs-constructed
+/// distinction is observable via JSON, because only <see cref="IdString"/> can be
+/// <see langword="null"/>-backed; the ULID and numeric families use
+/// <see langword="default"/>-as-zero and serialize accordingly.
 /// </para>
 /// </remarks>
 public sealed class IdStringJsonConverter : JsonConverter<IdString>
 {
-	// Default IdString MaxLength is 255; 256-byte stack buffer covers every non-prefixed
-	// canonical form. Typed IdString<T> with a larger MaxLength falls back to ToString().
+	// Non-generic IdString defaults to MaxLength = 255; a 256-byte stack buffer fits the
+	// canonical form (no prefix is possible on the non-generic) with one byte of slack.
 	private const int StackBufferSize = 256;
 
 	/// <inheritdoc />
@@ -116,7 +121,11 @@ public sealed class IdStringTypedJsonConverterFactory : JsonConverterFactory
 	{
 		// Max prefix (63) + separator (1) + default suffix (255) + slack = 320 bytes covers
 		// every default-configured IdString<T>. Types with a custom MaxLength greater than
-		// 255 fall back to ToString() via TryFormat returning false.
+		// 255 fall through to the ToString() fallback below — ToString() allocates a managed
+		// string and then the Utf8JsonWriter re-encodes it to UTF-8, costing two copies
+		// instead of the zero-copy stack path. Consumers who serialize very wide IdString<T>
+		// fields at high throughput should consider bumping this constant, keeping in mind
+		// the stackalloc is per-call and lives on the serializer thread.
 		private const int StackBufferSize = 320;
 
 		public override IdString<T> Read (ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)

@@ -37,7 +37,13 @@ namespace StrictId;
 public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 {
 	/// <summary>The underlying string suffix value. May be <see langword="null"/> for a default-constructed instance.</summary>
-	public string Value { get; init; }
+	/// <remarks>
+	/// The <c>init</c> accessor is <c>internal</c>: user code cannot bypass the validating
+	/// constructor by writing <c>new IdString&lt;T&gt; { Value = "..." }</c>. StrictId's
+	/// own internal parsers use the init accessor as an escape hatch to avoid re-validation
+	/// of values they have already validated and normalised.
+	/// </remarks>
+	public string Value { get; internal init; }
 
 	/// <summary>
 	/// Creates an <see cref="IdString{T}"/> by parsing and validating the given string
@@ -75,6 +81,15 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 	}
 
 	/// <summary>
+	/// Returns the underlying string suffix with no prefix applied, even for types that
+	/// declare one. This is the value that round-trips through the <see cref="Value"/>
+	/// property; <see cref="ToString()"/> prepends the canonical prefix when one is
+	/// declared, but <see cref="ToBareString"/> never does. Returns <see cref="string.Empty"/>
+	/// for a default-constructed instance whose <see cref="Value"/> is <see langword="null"/>.
+	/// </summary>
+	public string ToBareString () => Value ?? string.Empty;
+
+	/// <summary>
 	/// Returns the canonical string representation: <c>prefix_suffix</c> if
 	/// <typeparamref name="T"/> has a registered prefix, otherwise the bare suffix.
 	/// </summary>
@@ -106,8 +121,17 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 		IFormatProvider? provider
 	) => IdStringFormatter.TryFormat(Value, StrictIdMetadata<T>.Prefix, utf8Destination, out bytesWritten, format);
 
-	/// <summary>Converts this typed <see cref="IdString{T}"/> into a non-generic <see cref="IdString"/>, erasing the phantom entity type.</summary>
-	public IdString ToIdString () => Value is null ? default : new IdString(Value);
+	/// <summary>
+	/// Converts this typed <see cref="IdString{T}"/> into a non-generic <see cref="IdString"/>,
+	/// erasing the phantom entity type. The underlying string is copied verbatim — because the
+	/// typed form has already validated and normalised it, the non-generic form is constructed
+	/// via the internal <c>init</c> accessor rather than routed through the non-generic
+	/// validating constructor. This guarantees that erasing the type is infallible, even when
+	/// <typeparamref name="T"/>'s <see cref="IdStringAttribute"/> rules (e.g. larger
+	/// <see cref="IdStringAttribute.MaxLength"/>) would reject the value under the non-generic
+	/// defaults.
+	/// </summary>
+	public IdString ToIdString () => Value is null ? default : new IdString { Value = Value };
 
 	/// <summary>Parses a string into an <see cref="IdString{T}"/>.</summary>
 	/// <exception cref="FormatException">

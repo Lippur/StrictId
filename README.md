@@ -38,19 +38,18 @@ global using StrictId;
 ### Create
 ```csharp
 Id<Person>.NewId(); // Generate a new random ID
-new Id<Person>("01HV9AF3QA4T121HCZ873M0BKK"); // Create from ULID string
-new Id<Person>("018ED2A7-8EEA-2682-20C5-9F41C7402E73"); // Create from GUID string
-new Id<Person>(Ulid.NewUlid()); // Create from ULID
-new Id<Person>(Guid.NewGuid()); // Create from GUID
-new Id<Person>(Id.NewId()); // Create from non-typed ID
+Id<Person>.Parse("01HV9AF3QA4T121HCZ873M0BKK"); // Parse a ULID string
+Id<Person>.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73"); // Parse a GUID string
+new Id<Person>(Ulid.NewUlid()); // Wrap a ULID
+new Id<Person>(Guid.NewGuid()); // Wrap a GUID
+new Id<Person>(Id.NewId()); // Wrap a non-typed ID
 
 Id<Person> id = Ulid.NewUlid(); // Convert implicitly from Ulid
 Id<Person> id = Guid.NewGuid(); // Convert implicitly from Guid
 Id<Person> id = Id.NewId(); // Convert implicitly from non-typed Id
-var id = (Id<Person>)"01HV9AF3QA4T121HCZ873M0BKK"; // Cast from string
+var id = (Id<Person>)"01HV9AF3QA4T121HCZ873M0BKK"; // Cast from string (explicit, calls Parse)
 
-Id<Person> id = Id<Person>.Parse("018ED2A7-8EEA-2682-20C5-9F41C7402E73"); // Parse from Guid or Ulid
-bool success = Id<Person>.TryParse("01HV9AF3QA4T121HCZ873M0BKK", out Id<Person> id); // Safely parse from Guid or Ulid
+bool success = Id<Person>.TryParse("01HV9AF3QA4T121HCZ873M0BKK", out Id<Person> id); // Safely parse
 ```
 
 Usage of the non-typed `Id` is identical.
@@ -58,7 +57,7 @@ Usage of the non-typed `Id` is identical.
 ### Convert
 
 ```csharp
-var id = new Id<Person>("01HV9AF3QA4T121HCZ873M0BKK");
+var id = Id<Person>.Parse("01HV9AF3QA4T121HCZ873M0BKK");
 
 id.ToString(); // "01HV9AF3QA4T121HCZ873M0BKK"
 id.ToUlid(); // Same as Ulid.Parse("01HV9AF3QA4T121HCZ873M0BKK");

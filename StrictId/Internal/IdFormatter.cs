@@ -144,19 +144,25 @@ internal static class IdFormatter
 		return true;
 	}
 
+	/// <summary>
+	/// Writes the ULID or GUID suffix into the destination span. The <paramref name="lowercase"/>
+	/// flag only affects the ULID branch; the GUID branch always emits lowercase because
+	/// <see cref="Guid"/>'s <c>TryFormat</c> with the <c>"D"</c> specifier is already
+	/// lowercase, and there is no caller that asks for an uppercase GUID form. If a future
+	/// caller needs uppercase GUIDs, add an explicit format specifier rather than re-wiring
+	/// this helper.
+	/// </summary>
 	private static void WriteSuffix (Ulid value, Span<char> destination, bool asGuid, bool lowercase)
 	{
 		if (asGuid)
 		{
-			// Guid's "D" format is lowercase by default — no post-processing needed.
 			value.ToGuid().TryFormat(destination, out _, "D".AsSpan());
+			return;
 		}
-		else
-		{
-			// Cysharp's Ulid.TryFormat emits uppercase Crockford base32.
-			value.TryFormat(destination, out _, default, null);
-			if (lowercase) ToLowerAscii(destination);
-		}
+
+		// Cysharp's Ulid.TryFormat emits uppercase Crockford base32.
+		value.TryFormat(destination, out _, default, null);
+		if (lowercase) ToLowerAscii(destination);
 	}
 
 	private static void ToLowerAscii (Span<char> span)

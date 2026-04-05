@@ -1,3 +1,4 @@
+using System.Diagnostics;
 using System.Text;
 
 namespace StrictId.Internal;
@@ -141,8 +142,11 @@ internal static class IdStringParser
 				: $"bare suffix '{suffix.ToString()}' is invalid: {reason}";
 		}
 
-		// This branch should be unreachable — if validation passed here, parsing
-		// should have succeeded. Safe fallback for defense-in-depth.
+		// Unreachable by construction: TryParseString only returns false when either the
+		// input is empty (handled above) or IdStringValidator.IsValid returned false, which
+		// means GetInvalidReason must return non-null here. Keep the fallback as a
+		// Debug.Fail so a future regression surfaces loudly in development builds.
+		Debug.Fail("IdStringParser.DiagnoseFailure reached a branch that should be unreachable.");
 		return "input does not match the expected shape.";
 	}
 }

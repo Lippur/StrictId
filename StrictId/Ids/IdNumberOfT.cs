@@ -24,9 +24,26 @@ namespace StrictId;
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdNumberTypedJsonConverterFactory))]
 public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>, IComparable
 {
+	/// <summary>Creates an <see cref="IdNumber{T}"/> from an 8-bit signed integer.</summary>
+	/// <exception cref="OverflowException"><paramref name="value"/> is negative.</exception>
+	public IdNumber (sbyte value) : this(checked((ulong)value)) { }
+
+	/// <summary>Creates an <see cref="IdNumber{T}"/> from an 8-bit unsigned integer.</summary>
+	public IdNumber (byte value) : this((ulong)value) { }
+
+	/// <summary>Creates an <see cref="IdNumber{T}"/> from a signed 16-bit integer.</summary>
+	/// <exception cref="OverflowException"><paramref name="value"/> is negative.</exception>
+	public IdNumber (short value) : this(checked((ulong)value)) { }
+
+	/// <summary>Creates an <see cref="IdNumber{T}"/> from an unsigned 16-bit integer.</summary>
+	public IdNumber (ushort value) : this((ulong)value) { }
+
 	/// <summary>Creates an <see cref="IdNumber{T}"/> from a signed 32-bit integer.</summary>
 	/// <exception cref="OverflowException"><paramref name="value"/> is negative.</exception>
 	public IdNumber (int value) : this(checked((ulong)value)) { }
+
+	/// <summary>Creates an <see cref="IdNumber{T}"/> from an unsigned 32-bit integer.</summary>
+	public IdNumber (uint value) : this((ulong)value) { }
 
 	/// <summary>Creates an <see cref="IdNumber{T}"/> from a signed 64-bit integer.</summary>
 	/// <exception cref="OverflowException"><paramref name="value"/> is negative.</exception>
@@ -180,14 +197,23 @@ public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>
 	/// <summary>Implicitly converts a <see cref="long"/> to an <see cref="IdNumber{T}"/>. Throws <see cref="OverflowException"/> on negative values.</summary>
 	public static implicit operator IdNumber<T> (long value) => new(value);
 
-	/// <summary>
-	/// Implicitly converts an <see cref="int"/> to an <see cref="IdNumber{T}"/>. Throws
-	/// <see cref="OverflowException"/> on negative values. Integer widths smaller than
-	/// <see cref="int"/> (e.g. <see cref="byte"/>, <see cref="short"/>) may need an
-	/// explicit cast to <see cref="int"/>, <see cref="long"/>, or <see cref="ulong"/>
-	/// due to how C# resolves chained implicit conversions.
-	/// </summary>
+	/// <summary>Implicitly converts a <see cref="uint"/> to an <see cref="IdNumber{T}"/>.</summary>
+	public static implicit operator IdNumber<T> (uint value) => new(value);
+
+	/// <summary>Implicitly converts an <see cref="int"/> to an <see cref="IdNumber{T}"/>. Throws <see cref="OverflowException"/> on negative values.</summary>
 	public static implicit operator IdNumber<T> (int value) => new(value);
+
+	/// <summary>Implicitly converts a <see cref="ushort"/> to an <see cref="IdNumber{T}"/>.</summary>
+	public static implicit operator IdNumber<T> (ushort value) => new(value);
+
+	/// <summary>Implicitly converts a <see cref="short"/> to an <see cref="IdNumber{T}"/>. Throws <see cref="OverflowException"/> on negative values.</summary>
+	public static implicit operator IdNumber<T> (short value) => new(value);
+
+	/// <summary>Implicitly converts a <see cref="byte"/> to an <see cref="IdNumber{T}"/>.</summary>
+	public static implicit operator IdNumber<T> (byte value) => new(value);
+
+	/// <summary>Implicitly converts an <see cref="sbyte"/> to an <see cref="IdNumber{T}"/>. Throws <see cref="OverflowException"/> on negative values.</summary>
+	public static implicit operator IdNumber<T> (sbyte value) => new(value);
 
 	/// <summary>
 	/// Implicitly converts a non-generic <see cref="IdNumber"/> to an <see cref="IdNumber{T}"/>.

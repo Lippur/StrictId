@@ -30,6 +30,10 @@ public class IdStringOfTTests
 	[IdString(MaxLength = 5)]
 	private class Tight;
 
+	[IdPrefix("wide")]
+	[IdString(MaxLength = 512)]
+	private class Wide;
+
 	// ═════ Defaults ══════════════════════════════════════════════════════════
 
 	[Test]
@@ -309,6 +313,20 @@ public class IdStringOfTTests
 	// ═════ Helpers ═══════════════════════════════════════════════════════════
 
 	[Test]
+	public void ToBareString_StripsPrefix ()
+	{
+		var typed = new IdString<Customer>("cus_abc123");
+		typed.ToString().Should().Be("cus_abc123");
+		typed.ToBareString().Should().Be("abc123");
+	}
+
+	[Test]
+	public void ToBareString_DefaultInstance_IsEmpty ()
+	{
+		default(IdString<Customer>).ToBareString().Should().Be(string.Empty);
+	}
+
+	[Test]
 	public void ToIdString_ErasesGenericType ()
 	{
 		var typed = new IdString<Customer>("abc");
@@ -322,6 +340,20 @@ public class IdStringOfTTests
 		var typed = default(IdString<Customer>);
 		var erased = typed.ToIdString();
 		erased.Should().Be(default(IdString));
+	}
+
+	[Test]
+	public void ToIdString_OverDefaultMaxLength_IsLossless ()
+	{
+		// Wide's MaxLength is 512 — far above the non-generic IdString default of 255.
+		// ToIdString() must bypass the non-generic validator so that type erasure is
+		// infallible for an already-validated typed value.
+		var big = new string('a', 400);
+		var typed = new IdString<Wide>(big);
+		typed.Value.Length.Should().Be(400);
+
+		var erased = typed.ToIdString();
+		erased.Value.Should().Be(big);
 	}
 
 	[Test]

@@ -20,14 +20,6 @@ namespace StrictId;
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdTypedJsonConverterFactory))]
 public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 {
-	/// <summary>Creates an <see cref="Id{T}"/> by parsing the provided string.</summary>
-	/// <param name="value">
-	/// A bare 26-char ULID, bare 36-char GUID, or — if <typeparamref name="T"/> has an
-	/// <see cref="IdPrefixAttribute"/> — a prefixed form <c>prefix_ulid</c> or <c>prefix_guid</c>.
-	/// </param>
-	/// <exception cref="FormatException">The value is not a valid <see cref="Id{T}"/>.</exception>
-	public Id (string value) : this(Parse(value).Value) { }
-
 	/// <summary>Creates an <see cref="Id{T}"/> from a <see cref="Guid"/>.</summary>
 	public Id (Guid guid) : this(new Ulid(guid)) { }
 

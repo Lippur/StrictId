@@ -76,30 +76,30 @@ public class IdTests
 	}
 
 	[Test]
-	public void Constructor_FromLowercaseUlidString_Parses ()
+	public void Parse_FromLowercaseUlidString_Parses ()
 	{
-		var id = new Id(SampleUlidLower);
+		var id = Id.Parse(SampleUlidLower);
 		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
 	}
 
 	[Test]
-	public void Constructor_FromUppercaseUlidString_Parses ()
+	public void Parse_FromUppercaseUlidString_Parses ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
 	}
 
 	[Test]
-	public void Constructor_FromGuidString_Parses ()
+	public void Parse_FromGuidString_Parses ()
 	{
-		var id = new Id(SampleGuidLower);
+		var id = Id.Parse(SampleGuidLower);
 		id.ToGuid().Should().Be(Guid.Parse(SampleGuidLower));
 	}
 
 	[Test]
-	public void Constructor_FromInvalidString_ThrowsFormatException ()
+	public void Parse_FromInvalidString_ThrowsFormatException ()
 	{
-		var act = () => new Id("not a ulid or guid");
+		var act = () => Id.Parse("not a ulid or guid");
 		act.Should().Throw<FormatException>();
 	}
 
@@ -108,35 +108,35 @@ public class IdTests
 	[Test]
 	public void ToString_Default_IsLowercaseUlid ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString().Should().Be(SampleUlidLower);
 	}
 
 	[Test]
 	public void ToString_FormatC_IsLowercaseUlid ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString("C").Should().Be(SampleUlidLower);
 	}
 
 	[Test]
 	public void ToString_FormatB_IsBareLowercaseUlid ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString("B").Should().Be(SampleUlidLower);
 	}
 
 	[Test]
 	public void ToString_FormatU_IsUppercaseUlid_V2Compat ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString("U").Should().Be(SampleUlidUpper);
 	}
 
 	[Test]
 	public void ToString_FormatBG_IsBareLowercaseGuid ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString("BG").Should().Be(SampleGuidLower);
 	}
 
@@ -144,7 +144,7 @@ public class IdTests
 	public void ToString_FormatG_IsLowercaseGuid_ForNonGeneric ()
 	{
 		// Id has no prefix, so G and BG are equivalent.
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		id.ToString("G").Should().Be(SampleGuidLower);
 	}
 
@@ -337,7 +337,7 @@ public class IdTests
 	[Test]
 	public void Operator_ExplicitToString ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		var s = (string)id;
 		s.Should().Be(SampleUlidLower);
 	}
@@ -347,7 +347,7 @@ public class IdTests
 	[Test]
 	public void TryFormatChar_Sufficient_WritesLowercaseUlid ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		Span<char> buffer = stackalloc char[26];
 		id.TryFormat(buffer, out var written, default, null).Should().BeTrue();
 		written.Should().Be(26);
@@ -366,7 +366,7 @@ public class IdTests
 	[Test]
 	public void TryFormatByte_WritesUtf8Ascii ()
 	{
-		var id = new Id(SampleUlidUpper);
+		var id = Id.Parse(SampleUlidUpper);
 		Span<byte> buffer = stackalloc byte[26];
 		id.TryFormat(buffer, out var written, default, null).Should().BeTrue();
 		written.Should().Be(26);

@@ -188,9 +188,44 @@ public class IdNumberOfTTests
 	}
 
 	[Test]
+	public void Operator_ImplicitFromUInt ()
+	{
+		IdNumber<Invoice> n = 42U;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
 	public void Operator_ImplicitFromInt ()
 	{
 		IdNumber<Invoice> n = 42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromUShort ()
+	{
+		IdNumber<Invoice> n = (ushort)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromShort ()
+	{
+		IdNumber<Invoice> n = (short)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromByte ()
+	{
+		IdNumber<Invoice> n = (byte)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromSByte ()
+	{
+		IdNumber<Invoice> n = (sbyte)42;
 		n.Value.Should().Be(42UL);
 	}
 

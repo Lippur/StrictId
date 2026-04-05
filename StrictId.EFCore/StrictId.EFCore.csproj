@@ -21,6 +21,15 @@
         <RepositoryType>git</RepositoryType>
         <PublishRepositoryUrl>true</PublishRepositoryUrl>
         <PackageReadmeFile>README.md</PackageReadmeFile>
+        <PackageReleaseNotes>
+            v3 preview 1. The value converters now honour the v3 "prefixes live in the C#
+            type, never in the database" rule: every StrictId family (Id, IdNumber,
+            IdString) is persisted as its bare underlying value. Id maps to char(26),
+            IdNumber to bigint, IdString to varchar sized by the per-entity
+            [IdString] MaxLength. Covers both the non-generic and the generic forms via
+            a dispatching IdConvention. The legacy IdStringValueGenerator for plain string
+            columns has been removed.
+        </PackageReleaseNotes>
     </PropertyGroup>
 
     <ItemGroup>

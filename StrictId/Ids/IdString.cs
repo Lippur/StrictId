@@ -30,7 +30,13 @@ namespace StrictId;
 public readonly record struct IdString : IStrictId<IdString>, IComparable
 {
 	/// <summary>The underlying string value. May be <see langword="null"/> for a default-constructed instance.</summary>
-	public string Value { get; init; }
+	/// <remarks>
+	/// The <c>init</c> accessor is <c>internal</c>: user code cannot bypass the validating
+	/// constructor by writing <c>new IdString { Value = "..." }</c>. StrictId's own
+	/// internal parsers use the init accessor as an escape hatch to avoid re-validation of
+	/// values they have already validated and normalised.
+	/// </remarks>
+	public string Value { get; internal init; }
 
 	/// <summary>
 	/// Creates an <see cref="IdString"/> by validating the given string against the
@@ -65,6 +71,16 @@ public readonly record struct IdString : IStrictId<IdString>, IComparable
 		if (obj is IdString other) return CompareTo(other);
 		throw new ArgumentException($"Argument must be of type {nameof(IdString)}.", nameof(obj));
 	}
+
+	/// <summary>
+	/// Returns the underlying string suffix with no prefix applied. For the non-generic
+	/// <see cref="IdString"/> this is equivalent to <see cref="ToString()"/> because there
+	/// is no prefix, but the helper exists so that code written against the shared
+	/// <c>IdString</c> / <c>IdString&lt;T&gt;</c> surface can always say "give me the bare
+	/// suffix" without branching on the generic parameter. Returns <see cref="string.Empty"/>
+	/// for a default-constructed instance whose <see cref="Value"/> is <see langword="null"/>.
+	/// </summary>
+	public string ToBareString () => Value ?? string.Empty;
 
 	/// <summary>Returns the canonical string form of this <see cref="IdString"/>.</summary>
 	public override string ToString () => IdStringFormatter.Format(Value, PrefixInfo.None, default);

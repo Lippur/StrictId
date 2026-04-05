@@ -262,9 +262,44 @@ public class IdNumberTests
 	}
 
 	[Test]
+	public void Operator_ImplicitFromUInt ()
+	{
+		IdNumber n = 42U;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
 	public void Operator_ImplicitFromInt ()
 	{
 		IdNumber n = 42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromUShort ()
+	{
+		IdNumber n = (ushort)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromShort ()
+	{
+		IdNumber n = (short)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromByte ()
+	{
+		IdNumber n = (byte)42;
+		n.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Operator_ImplicitFromSByte ()
+	{
+		IdNumber n = (sbyte)42;
 		n.Value.Should().Be(42UL);
 	}
 
@@ -274,6 +309,26 @@ public class IdNumberTests
 		var act = () =>
 		{
 			IdNumber _ = -1;
+		};
+		act.Should().Throw<OverflowException>();
+	}
+
+	[Test]
+	public void Operator_ImplicitFromNegativeShort_Throws ()
+	{
+		var act = () =>
+		{
+			IdNumber _ = (short)-1;
+		};
+		act.Should().Throw<OverflowException>();
+	}
+
+	[Test]
+	public void Operator_ImplicitFromNegativeSByte_Throws ()
+	{
+		var act = () =>
+		{
+			IdNumber _ = (sbyte)-1;
 		};
 		act.Should().Throw<OverflowException>();
 	}

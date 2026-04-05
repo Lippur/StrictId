@@ -21,7 +21,19 @@ internal static class IdStringFormatter
 		if (format.IsEmpty || format.SequenceEqual("C"))
 		{
 			if (!prefix.HasPrefix) return value;
-			return string.Concat(prefix.Canonical, prefix.Separator.ToChar().ToString(), value);
+
+			var canonical = prefix.Canonical!;
+			var separator = prefix.Separator.ToChar();
+			var totalLen = canonical.Length + 1 + value.Length;
+
+			// string.Create avoids the per-call single-character string allocation that
+			// the naive string.Concat(canonical, separator.ToString(), value) would produce.
+			return string.Create(totalLen, (canonical, separator, value), static (span, state) =>
+			{
+				state.canonical.AsSpan().CopyTo(span);
+				span[state.canonical.Length] = state.separator;
+				state.value.AsSpan().CopyTo(span[(state.canonical.Length + 1)..]);
+			});
 		}
 		if (format.SequenceEqual("B"))
 			return value;
