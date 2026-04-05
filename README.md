@@ -1,10 +1,10 @@
-# StrictId
-***Strongly-typed, ergonomic, compatible, fun to use identifiers for your entities***  
+# <picture><source media="(prefers-color-scheme: dark)" srcset="assets/StrictId-Dark.svg"><img alt="StrictId" src="assets/StrictId-Light.svg" height="80"></picture>
 
-*Get on [NuGet](https://www.nuget.org/packages/StrictId)*:  
+***Strongly-typed, ergonomic, fun to use identifiers for your entities without any magic***
+
+
 [![StrictId](https://img.shields.io/nuget/v/StrictId?label=StrictId)](https://www.nuget.org/packages/StrictId)
 [![EFCore](https://img.shields.io/nuget/v/StrictId.EFCore?label=StrictId.EFCore)](https://www.nuget.org/packages/StrictId.EFCore)
-[![HotChocolate](https://img.shields.io/nuget/v/StrictId.HotChocolate?label=StrictId.HotChocolate)](https://www.nuget.org/packages/StrictId.HotChocolate)
 
 ---
 
@@ -18,15 +18,14 @@ public class Person {
 }
 ```
 
-- **Strongly-typed IDs for your entities, or anything else**
+- **Strongly-typed IDs for your entities and everything else you care to identify**
 - [Ulid](https://github.com/ulid/spec) as the underlying value, which can easily be converted to and from Guid, string, or byte arrays
 - Ergonomic, developer-friendly usage without ceremony, boilerplate, or annoyance
-- Cure to [primitive obsession](https://refactoring.guru/smells/primitive-obsession) by being a DDD-friendly value object
+- Helps cure [primitive obsession](https://refactoring.guru/smells/primitive-obsession) by giving you DDD-friendly value objects for IDs
 - Built-in JSON conversion support for System.Text.Json
 - Plug-and-play support for Entity Framework Core incl. value converters and value generators, with [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore)
-- Plug-and-play support for HotChocolate GraphQL incl. custom scalars for `Id<T>` and `Id`, with [StrictId.HotChocolate](https://www.nuget.org/packages/StrictId.HotChocolate)
-- Easy to create your own integrations and converters thanks to lack of magic
-- Tiny memory footprint and highly efficient
+- Easy to create your own integrations and converters - it's just a generic struct, no source generation magic
+- Tiny footprint and highly efficient, with only one dependency (Ulid)
 
 ## How
 
@@ -130,20 +129,7 @@ builder.Property(e => e.Id)
 #### Notes
 
 Id values are stored as fixed-length Ulid strings in the database (e.g. "01HV9AF3QA4T121HCZ873M0BKK"). An alternative value converter for storing them as Guid is also included (`StrictId.EFCore.ValueConverters.IdToGuidConverter`). Keep in mind that storing the IDs as Guid makes the database representation visually different from the normal string representation, which can be inconvenient.
-If you would prefer to store IDs as byte arrays, you can create your own value generator and converter based on the ones included. Keep in mind, though, that the small improvement you gain in database performance and storage by using byte arrays is most likely not worth the loss of readability and clarity. 
-
-### With Hot Chocolate GraphQL
-
-**Install [StrictId.HotChocolate](https://www.nuget.org/packages/StrictId.HotChocolate) via NuGet**
-
-On the request executor builder, configure strict IDs:
-```csharp
-builder.Services.AddGraphQLServer()
-    // ...
-    .AddStrictId();
-```
-
-Scalars will be created for each strict ID, named `{Type}Id`. For example, `Id<Person>` would become `PersonId` in the GraphQL schema.
+If you prefer to store IDs as byte arrays or any other format, it's only a few lines of code to create your own value generator and converter based on the ones included. Keep in mind, though, that the small improvement you gain in database performance and storage by using byte arrays is most likely not worth the loss of readability and clarity. 
 
 ## Why
 
