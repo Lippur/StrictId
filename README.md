@@ -8,7 +8,8 @@
 
 ---
 
-Strongly-typed generic structs for entity IDs. Four families cover different backing types: `Id<T>` (ULID), `Guid<T>` (wraps `System.Guid`), `IdNumber<T>` (integer), `IdString<T>` (opaque string). Since `Id<User>` and `Id<Order>` are different closed generics, the compiler catches mix-ups at build time.
+**StrictId gives you strongly-typed generic structs for entity IDs.**  
+Four families cover different backing types: `Id<T>` (ULID), `Guid<T>` (wraps `System.Guid`), `IdNumber<T>` (integer), `IdString<T>` (opaque string). Since `Id<User>` and `Id<Order>` are different closed generics, the compiler catches mix-ups at build time.
 
 Comes with System.Text.Json converters, EF Core value converters/generators, ASP.NET Core integration (OpenAPI, route constraints, ProblemDetails), Roslyn analysers, and AOT support. Single runtime dependency: [Ulid](https://github.com/Cysharp/Ulid).
 
