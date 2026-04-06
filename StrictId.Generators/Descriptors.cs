@@ -8,10 +8,16 @@ namespace StrictId.Generators;
 /// represents a type that was filtered out (either inaccessible from generated code,
 /// or malformed — the analyzer surfaces the malformed case as STRID003).
 /// </summary>
+/// <param name="SeparatorEnumMember">
+/// The separator enum member name from a type-level <c>[IdSeparator]</c>, or
+/// <see langword="null"/> when no type-level separator was declared. A <see langword="null"/>
+/// value signals the emission phase to substitute the assembly-level fallback (if any)
+/// or the built-in default (<c>"Underscore"</c>).
+/// </param>
 internal sealed record PrefixDescriptor (
 	string FullyQualifiedName,
 	EquatableArray<PrefixDeclaration> Prefixes,
-	string SeparatorEnumMember
+	string? SeparatorEnumMember
 );
 
 /// <summary>

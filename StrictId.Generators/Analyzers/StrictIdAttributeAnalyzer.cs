@@ -36,7 +36,8 @@ public sealed class StrictIdAttributeAnalyzer : DiagnosticAnalyzer
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Error,
 		isEnabledByDefault: true,
-		description: "IdSeparator is a closed enum. The only valid members are Underscore, Slash, Period, and Colon.");
+		description: "IdSeparator is a closed enum. The only valid members are Underscore, Slash, Period, and Colon.",
+		customTags: WellKnownDiagnosticTags.CompilationEnd);
 
 	/// <inheritdoc />
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
@@ -48,6 +49,7 @@ public sealed class StrictIdAttributeAnalyzer : DiagnosticAnalyzer
 		context.ConfigureGeneratedCodeAnalysis(GeneratedCodeAnalysisFlags.None);
 		context.EnableConcurrentExecution();
 		context.RegisterSymbolAction(AnalyzeNamedType, SymbolKind.NamedType);
+		context.RegisterCompilationAction(AnalyzeAssemblySeparator);
 	}
 
 	private static void AnalyzeNamedType (SymbolAnalysisContext context)
@@ -171,6 +173,28 @@ public sealed class StrictIdAttributeAnalyzer : DiagnosticAnalyzer
 				InvalidIdSeparator,
 				location,
 				type.ToDisplayString(),
+				intValue));
+		}
+	}
+
+	// ═════ Assembly-level STRID004 ═══════════════════════════════════════════
+
+	private static void AnalyzeAssemblySeparator (CompilationAnalysisContext context)
+	{
+		foreach (var attr in context.Compilation.Assembly.GetAttributes())
+		{
+			if (attr.AttributeClass?.ToDisplayString() != IdSeparatorAttributeMetadataName) continue;
+			if (attr.ConstructorArguments.Length == 0) continue;
+			var value = attr.ConstructorArguments[0].Value;
+			if (value is not int intValue) continue;
+
+			if (intValue is >= 0 and <= 3) continue;
+
+			var location = GetAttributeLocation(attr);
+			context.ReportDiagnostic(Diagnostic.Create(
+				InvalidIdSeparator,
+				location,
+				context.Compilation.AssemblyName ?? "<assembly>",
 				intValue));
 		}
 	}

@@ -28,4 +28,15 @@ public class IdSeparatorAttributeTests
 
 		attr.Separator.Should().Be(IdSeparator.Slash);
 	}
+
+	[Test]
+	public void AttributeUsageAllowsAssemblyTarget ()
+	{
+		var usage = typeof(IdSeparatorAttribute)
+			.GetCustomAttributes(typeof(AttributeUsageAttribute), inherit: false)
+			.Cast<AttributeUsageAttribute>()
+			.Single();
+
+		usage.ValidOn.Should().HaveFlag(AttributeTargets.Assembly);
+	}
 }

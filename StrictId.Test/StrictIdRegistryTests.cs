@@ -84,4 +84,53 @@ public class StrictIdRegistryTests
 		options.CharSet.Should().Be(IdStringCharSet.AlphanumericDash);
 		options.IgnoreCase.Should().BeTrue();
 	}
+
+	// ═════ Assembly-level separator fallback ═════════════════════════════════
+
+	[IdPrefix("asmtest")]
+	private class PrefixedWithoutSeparator;
+
+	[Test]
+	public void ResolvePrefix_UsesDefaultWhenNoTypeLevelOrAssemblyLevelSeparator ()
+	{
+		// This test assembly has no [assembly: IdSeparator], and the type has no
+		// type-level [IdSeparator]. The reflection path should walk the type chain,
+		// then check the assembly (finding nothing), and fall back to Underscore.
+		var info = StrictIdMetadataResolver.ResolvePrefix(typeof(PrefixedWithoutSeparator));
+
+		info.Canonical.Should().Be("asmtest");
+		info.Separator.Should().Be(IdSeparator.Underscore);
+	}
+
+	[IdPrefix("asmover")]
+	[IdSeparator(IdSeparator.Period)]
+	private class PrefixedWithTypeLevelSeparator;
+
+	[Test]
+	public void ResolvePrefix_TypeLevelSeparatorTakesPrecedence ()
+	{
+		// Even if an assembly-level separator existed, the type-level one wins.
+		// This test verifies the type-level separator is used when present.
+		var info = StrictIdMetadataResolver.ResolvePrefix(typeof(PrefixedWithTypeLevelSeparator));
+
+		info.Canonical.Should().Be("asmover");
+		info.Separator.Should().Be(IdSeparator.Period);
+	}
+
+	[IdSeparator(IdSeparator.Colon)]
+	private class BaseSeparator;
+
+	[IdPrefix("derived")]
+	private class DerivedWithInheritedSeparator : BaseSeparator;
+
+	[Test]
+	public void ResolvePrefix_InheritedTypeLevelSeparatorTakesPrecedenceOverAssembly ()
+	{
+		// An inherited type-level [IdSeparator] should be found before the assembly
+		// fallback is consulted.
+		var info = StrictIdMetadataResolver.ResolvePrefix(typeof(DerivedWithInheritedSeparator));
+
+		info.Canonical.Should().Be("derived");
+		info.Separator.Should().Be(IdSeparator.Colon);
+	}
 }

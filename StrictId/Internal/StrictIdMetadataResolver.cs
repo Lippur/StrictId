@@ -127,6 +127,9 @@ internal static class StrictIdMetadataResolver
 	/// <see cref="IdPrefixAttribute"/> and <see cref="IdSeparatorAttribute"/> declarations.
 	/// Each attribute is resolved independently: the first type in the chain that declares
 	/// it wins, and its declarations fully replace any found on further-up base types.
+	/// When no type in the chain declares <see cref="IdSeparatorAttribute"/>, the entity
+	/// type's declaring assembly is checked for an assembly-level <c>[assembly: IdSeparator]</c>
+	/// before falling back to the built-in default (<see cref="IdSeparator.Underscore"/>).
 	/// </summary>
 	private static (IdPrefixAttribute[] prefixes, IdSeparatorAttribute? separator) WalkPrefixAndSeparator (Type start)
 	{
@@ -151,6 +154,14 @@ internal static class StrictIdMetadataResolver
 			if (prefixes is not null && separator is not null) break;
 
 			current = current.BaseType;
+		}
+
+		// Assembly-level fallback: if no type in the chain declared [IdSeparator],
+		// check the entity type's declaring assembly for [assembly: IdSeparator(...)].
+		if (separator is null)
+		{
+			var assemblySeps = (IdSeparatorAttribute[])start.Assembly.GetCustomAttributes(typeof(IdSeparatorAttribute), inherit: false);
+			if (assemblySeps.Length > 0) separator = assemblySeps[0];
 		}
 
 		return (prefixes ?? [], separator);

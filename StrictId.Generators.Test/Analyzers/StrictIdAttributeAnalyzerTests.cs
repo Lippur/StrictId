@@ -211,4 +211,48 @@ public class StrictIdAttributeAnalyzerTests
 
 		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID004");
 	}
+
+	// ═════ STRID004 — assembly-level [IdSeparator] ══════════════════════════
+
+	[Test]
+	public async Task AssemblyLevelValidSeparator_NoDiagnostic ()
+	{
+		var result = await AnalyzerRunner.RunAsync(Analyzer, """
+			using StrictId;
+			[assembly: IdSeparator(IdSeparator.Colon)]
+			namespace MyApp;
+			[IdPrefix("user")]
+			public class User { }
+			""");
+
+		result.Diagnostics.Should().BeEmpty();
+	}
+
+	[Test]
+	public async Task AssemblyLevelOutOfRangeSeparator_ReportsSTRID004 ()
+	{
+		var result = await AnalyzerRunner.RunAsync(Analyzer, """
+			using StrictId;
+			[assembly: IdSeparator((IdSeparator)99)]
+			namespace MyApp;
+			[IdPrefix("user")]
+			public class User { }
+			""");
+
+		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID004");
+	}
+
+	[Test]
+	public async Task AssemblyLevelNegativeSeparator_ReportsSTRID004 ()
+	{
+		var result = await AnalyzerRunner.RunAsync(Analyzer, """
+			using StrictId;
+			[assembly: IdSeparator((IdSeparator)(-1))]
+			namespace MyApp;
+			[IdPrefix("user")]
+			public class User { }
+			""");
+
+		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID004");
+	}
 }
