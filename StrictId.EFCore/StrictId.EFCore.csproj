@@ -9,7 +9,7 @@
 
     <PropertyGroup>
         <PackageId>StrictId.EFCore</PackageId>
-        <Version>3.0.0-preview.1</Version>
+        <Version>3.0.0-preview.2</Version>
         <Authors>K. Lippur</Authors>
         <WebPage>https://github.com/Lippur/StrictId</WebPage>
         <PackageTags>Id;Ulid;Guid;Entity;Entity Framework Core;EFCore</PackageTags>
@@ -27,8 +27,7 @@
             the type system and are never stored in the column. The IdConvention consults
             StrictIdEfCoreRegistry (populated at module init by the StrictId source
             generator) before falling back to reflection, keeping AOT and trim warnings
-            off the fast path. IdStringValueGenerator removed. See CHANGELOG.md for the
-            full v2 → v3 migration notes.
+            off the fast path. IdStringValueGenerator removed.
         </PackageReleaseNotes>
     </PropertyGroup>
 
