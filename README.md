@@ -11,7 +11,7 @@
 **StrictId gives you strongly-typed generic structs for entity IDs.**  
 Four families cover different backing types: `Id<T>` (ULID), `Guid<T>` (wraps `System.Guid`), `IdNumber<T>` (integer), `IdString<T>` (opaque string). Since `Id<User>` and `Id<Order>` are different closed generics, the compiler catches mix-ups at build time.
 
-Comes with System.Text.Json converters, EF Core value converters/generators, ASP.NET Core integration (OpenAPI, route constraints, ProblemDetails), Roslyn analysers, and AOT support. Single runtime dependency: [Ulid](https://github.com/Cysharp/Ulid).
+Comes with System.Text.Json converters, EF Core value converters/generators, ASP.NET Core integration (OpenAPI, route constraints, ProblemDetails), Roslyn analysers, and AOT support. Only one runtime dependency, [Ulid](https://github.com/Cysharp/Ulid).
 
 ```csharp
 [IdPrefix("user")]
@@ -29,11 +29,11 @@ It's just generic structs and attributes. Decorate your entities with `[IdPrefix
 ## Why StrictId
 
 - **Type safety without boilerplate.** Libraries like [StronglyTypedId](https://github.com/andrewlock/StronglyTypedId) and [Vogen](https://github.com/SteveDunn/Vogen) require declaring a partial type per entity and rely on source generation to create the ID struct for you. StrictId uses closed generics instead, so `Id<User>` works immediately.
-- **Simple, obvious API.** Things just work when you need them to, with sane defaults and quality-of-life features. 
-- **Ulid, but more.** If you already use the [Ulid](https://github.com/Cysharp/Ulid) library, `Id<T>` wraps it with type safety, prefixed string forms, JSON converters, and EF Core/ASP.NET integration on top.
+- **Simple, obvious API.** Things just work when you need them to, with sane defaults and quality-of-life features, plus analysers to catch any mistakes. 
+- **Ulid, but more.** If you already use the [Ulid](https://github.com/Cysharp/Ulid) library, StrictId wraps it with type safety, prefixed string forms, JSON converters, and EF Core/ASP.NET integration on top.
 - **Covers every backing type.** Whether you use Guid, Ulid, slugs, numbers, or all four at the same time, StrictId works seamlessly and consistently. 
 - **Drop-in Guid replacement.** `Guid<T>` mirrors the `System.Guid` API, so switching is mostly find-and-replace. Existing database columns work without migration.
-- **Robust and reliable.** The core implementation is just a simple trusty generic struct, and 550+ unit and integration tests make sure I don't cause you any sleepless nights with the more complex parts.
+- **Robust and reliable.** The core is just a simple generic struct, and 550+ unit and integration tests make sure the rest works fine too.
 
 ## Get started
 
@@ -65,15 +65,15 @@ This pattern (`NewId()`, `Parse`, `TryParse`, `IsValid`, `ToString` with format 
 
 ## Features
 
-- **Four ID families.** `Id<T>` for ULIDs, `Guid<T>` (wraps `System.Guid`), `IdNumber<T>` for integers, `IdString<T>` for opaque strings. Each also has a non-generic variant (`Id`, `IdNumber`, `IdString`) for type-erased scenarios.
+- **Four ID families.** `Id<T>` for ULIDs and time-sorted Guids, `Guid<T>` (wraps `System.Guid`), `IdNumber<T>` for integers, `IdString<T>` for opaque strings. Each also has a non-generic variant (`Id`, `IdNumber`, `IdString`) for type-erased scenarios.
 - **Compile-time type safety.** `Id<User>` and `Id<Order>` are different closed generic types, so cross-type comparisons, assignments, and method calls are compiler errors.
 - **Prefixed string forms.** `[IdPrefix("user")]` on your entity type gives you `user_01knfv...` output. Supports multiple aliases for backwards-compatible parsing, and the separator character is configurable per type or per assembly.
-- **System.Text.Json** converters for every family, including dictionary key support. Included in the core package.
-- **EF Core** value converters and conventions via [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore). Prefixes live in the type system and are never stored in the database.
+- **System.Text.Json** converters for every family, including dictionary key support. Works out of the box.
+- **EF Core** value converters and conventions via [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore). Prefixes live in the type system and are never stored in the database, so your column types stay efficient.
 - **ASP.NET Core** integration via [StrictId.AspNetCore](https://www.nuget.org/packages/StrictId.AspNetCore), including OpenAPI schemas with per-type patterns and examples, route constraints, and `ProblemDetails` on parse failure.
 - **Roslyn analysers** (STRID001–006) catch cross-type `.Value` comparisons, malformed `[IdPrefix]` declarations, wrong-family attribute mismatches, and more at compile time.
 - **AOT-friendly.** A bundled source generator populates a registry at module init so JSON and EF Core hot paths skip reflection.
-- Single runtime dependency: [Ulid](https://github.com/Cysharp/Ulid).
+- Only one dependency, [Ulid](https://github.com/Cysharp/Ulid).
 
 ## Usage
 
