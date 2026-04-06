@@ -6,29 +6,11 @@ namespace StrictId.AspNetCore.ProblemDetails;
 /// <summary>
 /// Maps <see cref="FormatException"/>s raised by StrictId parsers to an RFC 7807
 /// <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> response with
-/// <see cref="StatusCodes.Status400BadRequest"/>. Registered via
-/// <see cref="StrictIdAspNetCoreExtensions.AddStrictIdProblemDetails"/>.
+/// <see cref="StatusCodes.Status400BadRequest"/>. Only matches exceptions whose
+/// <see cref="Exception.Source"/> is <c>"StrictId"</c>; non-StrictId exceptions
+/// fall through to the next handler. Walks the inner-exception chain so wrapped
+/// failures (e.g. <c>JsonException → FormatException</c>) are also caught.
 /// </summary>
-/// <remarks>
-/// <para>
-/// Route binding and JSON deserialisation already surface 400s for most parse
-/// failures, so the primary audience for this handler is code paths where a
-/// <see cref="FormatException"/> would otherwise escape unhandled to the pipeline and
-/// be rendered as a 500: unwrapped JSON body failures without the default validation
-/// pipeline, legacy TypeConverter-based binding, or deliberate <c>Parse</c> calls from
-/// action bodies.
-/// </para>
-/// <para>
-/// Recognition is based on <see cref="Exception.Source"/>: <see cref="Exception.Source"/>
-/// defaults to the assembly name of the throwing method, so every
-/// <see cref="FormatException"/> originating inside StrictId carries
-/// <c>Source == "StrictId"</c>. The handler walks the inner-exception chain so wrapped
-/// failures (for example <c>JsonException → FormatException</c>) are also caught.
-/// Matching on <see cref="Exception.Source"/> rather than exception type keeps the
-/// handler scoped: a <see cref="FormatException"/> raised by arbitrary third-party code
-/// still falls through to the framework's default handling.
-/// </para>
-/// </remarks>
 public sealed class StrictIdFormatExceptionHandler : IExceptionHandler
 {
 	internal const string StrictIdAssemblyName = "StrictId";

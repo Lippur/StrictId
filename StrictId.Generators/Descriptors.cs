@@ -1,18 +1,13 @@
 namespace StrictId.Generators;
 
 /// <summary>
-/// A snapshot of an <see cref="IdPrefixAttribute"/>-decorated user type, captured
-/// during the incremental-generator scan. Flows through the pipeline as an equatable
-/// record so the incremental cache can short-circuit when the user only touches
-/// unrelated code. A descriptor with an empty <see cref="FullyQualifiedName"/>
-/// represents a type that was filtered out (either inaccessible from generated code,
-/// or malformed — the analyzer surfaces the malformed case as STRID003).
+/// A snapshot of an <c>[IdPrefix]</c>-decorated user type from the incremental-generator
+/// scan. An empty <see cref="FullyQualifiedName"/> means the type was filtered out
+/// (inaccessible or malformed).
 /// </summary>
 /// <param name="SeparatorEnumMember">
 /// The separator enum member name from a type-level <c>[IdSeparator]</c>, or
-/// <see langword="null"/> when no type-level separator was declared. A <see langword="null"/>
-/// value signals the emission phase to substitute the assembly-level fallback (if any)
-/// or the built-in default (<c>"Underscore"</c>).
+/// <see langword="null"/> to use the assembly-level fallback.
 /// </param>
 internal sealed record PrefixDescriptor (
 	string FullyQualifiedName,

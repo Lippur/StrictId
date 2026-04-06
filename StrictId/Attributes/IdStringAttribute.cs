@@ -19,8 +19,7 @@ public sealed class IdStringAttribute : Attribute
 
 	/// <summary>
 	/// <see langword="true"/> to treat differently-cased suffixes as equal. Defaults to
-	/// <see langword="false"/> to match the behaviour of most real-world opaque string
-	/// IDs (for example Stripe's <c>cus_...</c>).
+	/// <see langword="false"/> (case-sensitive).
 	/// </summary>
 	public bool IgnoreCase { get; set; }
 }

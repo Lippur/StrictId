@@ -8,35 +8,20 @@ namespace StrictId;
 
 /// <summary>
 /// A non-generic, type-erased string-backed StrictId. Wraps an opaque
-/// <see cref="string"/> value intended for third-party IDs (Stripe <c>cus_...</c>,
-/// Twilio <c>SM...</c>), legacy string IDs, slugs, or SKUs. For type-safe
-/// string identifiers that cannot be mixed across entities, prefer
+/// <see cref="string"/> value. For type-safe string identifiers, use
 /// <see cref="IdString{T}"/>.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Uses the default <see cref="IdStringOptions"/>: maximum length 255, character set
-/// <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>, and case-sensitive comparison.
-/// The non-generic form cannot be configured via attribute — attach an
-/// <see cref="IdStringAttribute"/> to a marker type and use <see cref="IdString{T}"/>
-/// if you need custom rules.
-/// </para>
-/// <para>
-/// The <see cref="Value"/> property may be <see langword="null"/> for a
-/// default-constructed instance; use <see cref="HasValue"/> to distinguish a real
-/// value from the default.
-/// </para>
+/// Uses default validation: max length 255,
+/// <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>, case-sensitive. For custom
+/// rules, attach <see cref="IdStringAttribute"/> to a marker type and use
+/// <see cref="IdString{T}"/>. <see cref="Value"/> may be <see langword="null"/> for a
+/// default-constructed instance.
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdStringJsonConverter))]
 public readonly record struct IdString : IStrictId<IdString>, IComparable
 {
 	/// <summary>The underlying string value. May be <see langword="null"/> for a default-constructed instance.</summary>
-	/// <remarks>
-	/// The <c>init</c> accessor is <c>internal</c>: user code cannot bypass the validating
-	/// constructor by writing <c>new IdString { Value = "..." }</c>. StrictId's own
-	/// internal parsers use the init accessor as an escape hatch to avoid re-validation of
-	/// values they have already validated and normalised.
-	/// </remarks>
 	public string Value { get; internal init; }
 
 	/// <summary>
@@ -74,12 +59,10 @@ public readonly record struct IdString : IStrictId<IdString>, IComparable
 	}
 
 	/// <summary>
-	/// Returns the underlying string suffix with no prefix applied. For the non-generic
-	/// <see cref="IdString"/> this is equivalent to <see cref="ToString()"/> because there
-	/// is no prefix, but the helper exists so that code written against the shared
-	/// <c>IdString</c> / <c>IdString&lt;T&gt;</c> surface can always say "give me the bare
-	/// suffix" without branching on the generic parameter. Returns <see cref="string.Empty"/>
-	/// for a default-constructed instance whose <see cref="Value"/> is <see langword="null"/>.
+	/// Returns the underlying string suffix with no prefix. Equivalent to
+	/// <see cref="ToString()"/> on the non-generic <see cref="IdString"/> (which has no
+	/// prefix), but consistent with <see cref="IdString{T}.ToBareString"/>. Returns
+	/// <see cref="string.Empty"/> for a default-constructed instance.
 	/// </summary>
 	public string ToBareString () => Value ?? string.Empty;
 

@@ -28,9 +28,9 @@ public class EFCoreTests
 	}
 
 	[IdPrefix("cus"), IdString(MaxLength = 32, CharSet = IdStringCharSet.AlphanumericUnderscore)]
-	private class StripeCustomer
+	private class Customer
 	{
-		public IdString<StripeCustomer> Id { get; set; }
+		public IdString<Customer> Id { get; set; }
 		public string Email { get; set; } = string.Empty;
 	}
 
@@ -64,7 +64,7 @@ public class EFCoreTests
 	{
 		public DbSet<User> Users => Set<User>();
 		public DbSet<Order> Orders => Set<Order>();
-		public DbSet<StripeCustomer> StripeCustomers => Set<StripeCustomer>();
+		public DbSet<Customer> Customers => Set<Customer>();
 		public DbSet<Product> Products => Set<Product>();
 		public DbSet<Event> Events => Set<Event>();
 		public DbSet<UnicodeTag> UnicodeTags => Set<UnicodeTag>();
@@ -78,7 +78,7 @@ public class EFCoreTests
 		{
 			modelBuilder.Entity<User>().HasKey(u => u.Id);
 			modelBuilder.Entity<Order>().HasKey(o => o.Id);
-			modelBuilder.Entity<StripeCustomer>().HasKey(c => c.Id);
+			modelBuilder.Entity<Customer>().HasKey(c => c.Id);
 			modelBuilder.Entity<Product>().HasKey(p => p.Id);
 			modelBuilder.Entity<Event>().HasKey(e => e.EventId);
 			modelBuilder.Entity<UnicodeTag>().HasKey(t => t.Id);
@@ -219,17 +219,17 @@ public class EFCoreTests
 	[Test]
 	public void IdStringOfT_RoundTripsThroughSqlite ()
 	{
-		var customer = new StripeCustomer
+		var customer = new Customer
 		{
-			Id = new IdString<StripeCustomer>("1a2b3c4d5e"),
+			Id = new IdString<Customer>("1a2b3c4d5e"),
 			Email = "alice@example.com",
 		};
-		_db.StripeCustomers.Add(customer);
+		_db.Customers.Add(customer);
 		_db.SaveChanges();
 
 		_db.ChangeTracker.Clear();
 
-		var fetched = _db.StripeCustomers.Single(c => c.Id == customer.Id);
+		var fetched = _db.Customers.Single(c => c.Id == customer.Id);
 
 		fetched.Id.Should().Be(customer.Id);
 		fetched.Id.Value.Should().Be("1a2b3c4d5e");
@@ -239,14 +239,14 @@ public class EFCoreTests
 	[Test]
 	public void IdStringOfT_StoresBareSuffixWithoutPrefix ()
 	{
-		_db.StripeCustomers.Add(new StripeCustomer
+		_db.Customers.Add(new Customer
 		{
-			Id = new IdString<StripeCustomer>("abcXYZ"),
+			Id = new IdString<Customer>("abcXYZ"),
 			Email = "bob@example.com",
 		});
 		_db.SaveChanges();
 
-		var stored = ReadScalarString("SELECT Id FROM StripeCustomers LIMIT 1");
+		var stored = ReadScalarString("SELECT Id FROM Customers LIMIT 1");
 
 		stored.Should().Be("abcXYZ");
 		stored.Should().NotStartWith("cus_");
@@ -257,26 +257,26 @@ public class EFCoreTests
 	{
 		// Constructing the IdString<T> from its prefixed form must still persist only
 		// the bare suffix — the prefix is a C# type-system artefact, not a column value.
-		_db.StripeCustomers.Add(new StripeCustomer
+		_db.Customers.Add(new Customer
 		{
-			Id = new IdString<StripeCustomer>("cus_stripeId01"),
+			Id = new IdString<Customer>("cus_extId01"),
 			Email = "carol@example.com",
 		});
 		_db.SaveChanges();
 
-		var stored = ReadScalarString("SELECT Id FROM StripeCustomers LIMIT 1");
+		var stored = ReadScalarString("SELECT Id FROM Customers LIMIT 1");
 
-		stored.Should().Be("stripeId01");
+		stored.Should().Be("extId01");
 	}
 
 	[Test]
 	public void IdStringOfT_MaxLengthConstraintReflectsAttribute ()
 	{
-		// The StripeCustomer entity declares [IdString(MaxLength = 32)], so the
+		// The Customer entity declares [IdString(MaxLength = 32)], so the
 		// convention should have applied HasMaxLength(32) to the Id column. EF Core
 		// surfaces this in the model metadata regardless of whether SQLite enforces it.
-		var entityType = _db.Model.FindEntityType(typeof(StripeCustomer))!;
-		var property = entityType.FindProperty(nameof(StripeCustomer.Id))!;
+		var entityType = _db.Model.FindEntityType(typeof(Customer))!;
+		var property = entityType.FindProperty(nameof(Customer.Id))!;
 		property.GetMaxLength().Should().Be(32);
 	}
 
@@ -385,9 +385,9 @@ public class EFCoreTests
 	[Test]
 	public void IdStringOfT_WithAsciiCharSetIsDeclaredNonUnicode ()
 	{
-		// StripeCustomer's [IdString(CharSet = AlphanumericUnderscore)] restricts the
+		// Customer's [IdString(CharSet = AlphanumericUnderscore)] restricts the
 		// suffix to ASCII, so the column can be non-Unicode.
-		var property = _db.Model.FindEntityType(typeof(StripeCustomer))!.FindProperty(nameof(StripeCustomer.Id))!;
+		var property = _db.Model.FindEntityType(typeof(Customer))!.FindProperty(nameof(Customer.Id))!;
 		property.IsUnicode().Should().BeFalse();
 	}
 

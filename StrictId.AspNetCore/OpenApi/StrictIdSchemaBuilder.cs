@@ -5,28 +5,12 @@ using StrictId.Internal;
 namespace StrictId.AspNetCore.OpenApi;
 
 /// <summary>
-/// Builds the <c>pattern</c>, <c>example</c>, and <c>description</c> fields that the
-/// <see cref="StrictIdSchemaTransformer"/> writes into an OpenAPI schema for a closed
-/// StrictId type. Lives behind a stable internal API so the transformer can stay
-/// declarative and unit-testable without reaching into metadata internals directly.
+/// Builds the <c>pattern</c>, <c>example</c>, and <c>description</c> fields for
+/// OpenAPI schemas of StrictId types. Used by both <see cref="StrictIdSchemaTransformer"/>
+/// and <see cref="StrictIdOperationTransformer"/>. Patterns use the canonical prefix
+/// and separator only; the schema description notes that aliases and alternate
+/// separators are also accepted on input.
 /// </summary>
-/// <remarks>
-/// <para>
-/// The builder is shared across all three StrictId families: <see cref="Id{T}"/>,
-/// <see cref="IdNumber{T}"/>, and <see cref="IdString{T}"/>. The family dictates the
-/// suffix grammar — Crockford base32 for ULID, decimal digits for numeric, a charset-
-/// dependent character class for string — while the prefix portion comes from the
-/// shared <see cref="PrefixInfo"/> resolved by
-/// <see cref="StrictIdMetadataResolver"/>.
-/// </para>
-/// <para>
-/// Patterns use the declared canonical prefix and separator only. Even though the
-/// runtime parser tolerates any <see cref="IdSeparator"/> value on input, the
-/// canonical form is what clients should emit; documenting the more permissive
-/// grammar would give false precision. The schema description notes that aliases and
-/// alternate separators are also accepted.
-/// </para>
-/// </remarks>
 internal static class StrictIdSchemaBuilder
 {
 	// ULID is stored as exactly 26 characters in Crockford base32. The alphabet is

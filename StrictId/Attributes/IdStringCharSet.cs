@@ -20,10 +20,6 @@ public enum IdStringCharSet
 	/// <summary>ASCII letters, digits, and underscore: <c>[A-Za-z0-9_]</c>.</summary>
 	AlphanumericUnderscore,
 
-	/// <summary>
-	/// ASCII letters, digits, dash, and underscore: <c>[A-Za-z0-9_-]</c>. The default.
-	/// Covers the most common characters found in real-world opaque string identifiers
-	/// (Stripe <c>cus_L8x9Kq4YZ</c>, slug-style <c>my-item-42</c>, etc.).
-	/// </summary>
+	/// <summary>ASCII letters, digits, dash, and underscore: <c>[A-Za-z0-9_-]</c>. The default.</summary>
 	AlphanumericDashUnderscore,
 }

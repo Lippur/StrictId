@@ -7,12 +7,11 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed Guid identifier for entities of type
-/// <typeparamref name="T"/>. Designed as a drop-in replacement for <see cref="Guid"/>:
-/// the API surface mirrors <see cref="Guid"/> as closely as possible so that changing
-/// <c>Guid</c> to <c>Guid&lt;T&gt;</c> requires minimal code changes. When no
-/// <see cref="IdPrefixAttribute"/> is declared on <typeparamref name="T"/>, formatting and
-/// parsing behaviour is identical to <see cref="Guid"/>.
+/// A strongly-typed Guid identifier for entities of type <typeparamref name="T"/>.
+/// API mirrors <see cref="Guid"/> so that changing <c>Guid</c> to <c>Guid&lt;T&gt;</c>
+/// requires minimal code changes. When no <see cref="IdPrefixAttribute"/> is declared on
+/// <typeparamref name="T"/>, formatting and parsing behaviour is identical to
+/// <see cref="Guid"/>.
 /// </summary>
 /// <typeparam name="T">
 /// The entity type this identifier belongs to. Used only as a compile-time tag and as the
@@ -140,30 +139,23 @@ public readonly record struct Guid<T> (Guid Value) : IStrictId<Guid<T>>, ICompar
 	public static bool IsValid (string? s) => TryParse(s, out _);
 
 	/// <summary>
-	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.CreateVersion7()"/>,
-	/// producing a time-sortable UUIDv7. This is the StrictId convention for generating
-	/// new identifiers.
+	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.CreateVersion7()"/> (UUIDv7).
 	/// </summary>
 	public static Guid<T> NewId () => new(Guid.CreateVersion7());
 
 	/// <summary>
-	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.NewGuid()"/>,
-	/// producing a random UUIDv4. Matches the <see cref="Guid.NewGuid"/> API for
-	/// drop-in compatibility.
+	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.NewGuid()"/> (UUIDv4).
 	/// </summary>
 	public static Guid<T> NewGuid () => new(Guid.NewGuid());
 
 	/// <summary>
-	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.CreateVersion7()"/>,
-	/// producing a time-sortable UUIDv7. Mirrors the <see cref="Guid.CreateVersion7()"/>
-	/// API for drop-in compatibility.
+	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.CreateVersion7()"/> (UUIDv7).
 	/// </summary>
 	public static Guid<T> CreateVersion7 () => new(Guid.CreateVersion7());
 
 	/// <summary>
 	/// Generates a new <see cref="Guid{T}"/> using <see cref="Guid.CreateVersion7(DateTimeOffset)"/>
-	/// with the given timestamp. Mirrors the <see cref="Guid.CreateVersion7(DateTimeOffset)"/>
-	/// API for drop-in compatibility.
+	/// with the given timestamp.
 	/// </summary>
 	/// <param name="timestamp">The timestamp to embed in the UUIDv7.</param>
 	public static Guid<T> CreateVersion7 (DateTimeOffset timestamp) => new(Guid.CreateVersion7(timestamp));

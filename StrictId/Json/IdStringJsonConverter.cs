@@ -11,18 +11,8 @@ namespace StrictId.Json;
 /// JSON object key.
 /// </summary>
 /// <remarks>
-/// <para>
-/// <b>Design note — default round-trip convention.</b> A default <see cref="IdString"/>
-/// (whose <see cref="IdString.Value"/> is <see langword="null"/>) serializes to an empty
-/// JSON string <c>""</c>, and an empty JSON string deserializes back to
-/// <see langword="default"/>. This convention is unambiguous because a *constructed*
-/// <see cref="IdString"/> can never have an empty suffix — the validating constructor
-/// rejects <c>""</c> — so the empty-string wire form is reserved for the default.
-/// <see cref="IdString"/> is the only StrictId family where the default-vs-constructed
-/// distinction is observable via JSON, because only <see cref="IdString"/> can be
-/// <see langword="null"/>-backed; the ULID and numeric families use
-/// <see langword="default"/>-as-zero and serialize accordingly.
-/// </para>
+/// A default <see cref="IdString"/> serializes to an empty JSON string <c>""</c>,
+/// and an empty JSON string deserializes back to <see langword="default"/>.
 /// </remarks>
 public sealed class IdStringJsonConverter : JsonConverter<IdString>
 {
@@ -83,14 +73,11 @@ public sealed class IdStringJsonConverter : JsonConverter<IdString>
 
 /// <summary>
 /// Concrete <see cref="JsonConverter{T}"/> for a closed <see cref="IdString{T}"/>.
-/// Constructed directly by generated code (StrictId source generator) and registered
-/// into <see cref="StrictIdRegistry"/> so the <see cref="IdStringTypedJsonConverterFactory"/>
-/// can resolve it without <see cref="Type.MakeGenericType(Type[])"/>.
+/// Reads any form <see cref="IdString{T}.Parse(string)"/> accepts; writes the canonical
+/// prefixed form when <typeparamref name="T"/> has a registered prefix, otherwise the bare suffix.
+/// A default <see cref="IdString{T}"/> serializes as an empty JSON string and round-trips
+/// back to <see langword="default"/>.
 /// </summary>
-/// <remarks>
-/// A default <see cref="IdString{T}"/> serializes as an empty JSON string and
-/// round-trips back to <see langword="default"/>.
-/// </remarks>
 /// <typeparam name="T">The entity type of the <see cref="IdString{T}"/>.</typeparam>
 public sealed class IdStringTypedJsonConverter<T> : JsonConverter<IdString<T>>
 {

@@ -15,9 +15,8 @@ namespace StrictId.EFCore;
 public static class EfCoreExtensions
 {
 	/// <summary>
-	/// Registers value converters for every StrictId family on the model. In v3 the
-	/// prefix is a C# type-system concept and is never stored in the database; each
-	/// converter writes only the underlying bare value.
+	/// Registers value converters for every StrictId family on the model. Prefixes are
+	/// not stored; each converter writes only the underlying bare value.
 	/// <list type="bullet">
 	/// <item><see cref="Id"/>/<see cref="Id{T}"/> → fixed-length 26-character lowercase
 	/// Crockford base32 ULID strings.</item>

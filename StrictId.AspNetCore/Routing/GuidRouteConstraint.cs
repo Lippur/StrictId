@@ -5,20 +5,10 @@ namespace StrictId.AspNetCore.Routing;
 
 /// <summary>
 /// Route constraint that matches a segment parsable as a <see cref="Guid"/>. Registered
-/// under the token <c>guid</c> so a route template such as <c>/users/{id:guid}</c> only
-/// matches when the segment is a valid GUID (bare or prefixed). Note that ASP.NET Core
-/// already ships a built-in <c>guid</c> constraint; this one is a superset that also
-/// accepts StrictId-prefixed forms and is registered by
-/// <see cref="StrictIdAspNetCoreExtensions.AddStrictIdRouteConstraints"/>.
-/// </summary>
-/// <remarks>
-/// <para>
-/// The constraint is entity-agnostic: it checks whether the segment is structurally valid
-/// as any <see cref="Guid{T}"/>, not whether the prefix matches a specific entity. Per-
-/// entity prefix validation happens during parameter binding via
+/// under the token <c>strictguid</c>. Accepts bare and StrictId-prefixed GUID forms.
+/// Entity-agnostic; per-entity prefix validation happens during parameter binding via
 /// <see cref="Guid{T}.TryParse(string?, out Guid{T})"/>.
-/// </para>
-/// </remarks>
+/// </summary>
 public sealed class GuidRouteConstraint : IRouteConstraint
 {
 	/// <inheritdoc />

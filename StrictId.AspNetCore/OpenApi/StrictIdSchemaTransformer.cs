@@ -5,30 +5,11 @@ using Microsoft.OpenApi;
 namespace StrictId.AspNetCore.OpenApi;
 
 /// <summary>
-/// ASP.NET Core OpenAPI schema transformer that recognises every closed StrictId
-/// generic and rewrites its schema into a string type with a per-closed-generic
-/// <c>pattern</c>, <c>example</c>, and prefix-aware <c>description</c>. Registered via
-/// <see cref="StrictIdAspNetCoreExtensions.AddStrictIdOpenApi"/>.
+/// ASP.NET Core OpenAPI schema transformer that rewrites StrictId type schemas into
+/// string types with per-type <c>pattern</c>, <c>example</c>, and <c>description</c>.
+/// Overrides the default schema generation, which would expose the underlying
+/// <c>Value</c> property instead of the actual JSON wire format (a single string).
 /// </summary>
-/// <remarks>
-/// <para>
-/// The default OpenAPI schema generation in .NET 10 walks a type's JSON serialization
-/// shape, which for the StrictId record structs would expose their underlying
-/// <see cref="Ulid"/> / <see cref="ulong"/> / <see cref="string"/> <c>Value</c>
-/// property and anything else the JSON converter writes. That is not how StrictId
-/// serialises — the type-level <see cref="System.Text.Json.Serialization.JsonConverter"/>
-/// writes a single string. This transformer overrides the schema to match the actual
-/// wire format.
-/// </para>
-/// <para>
-/// Recognition is duck-typed from the CLR type: the non-generic families are matched
-/// directly, and the generic families are matched by comparing the open generic
-/// definition. Once a match is found, the transformer delegates to
-/// <see cref="StrictIdSchemaBuilder"/> to compute the pattern / example / description
-/// from the entity type's <see cref="IdPrefixAttribute"/> and (for <see cref="IdString{T}"/>)
-/// <see cref="IdStringAttribute"/> metadata.
-/// </para>
-/// </remarks>
 internal sealed class StrictIdSchemaTransformer
 {
 	/// <summary>

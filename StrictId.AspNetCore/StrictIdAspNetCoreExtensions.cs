@@ -13,19 +13,11 @@ using StrictId.AspNetCore.TypeConverters;
 namespace StrictId.AspNetCore;
 
 /// <summary>
-/// Service-collection extensions that opt an ASP.NET Core app into StrictId's
-/// integration surface: OpenAPI schemas, route constraints, legacy
-/// <see cref="TypeConverter"/> registrations, and a <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/>
-/// mapping for parse failures. Each hook is exposed individually so consumers can
-/// cherry-pick — call <see cref="AddStrictId"/> to enable them all at once.
+/// Service-collection extensions for StrictId's ASP.NET Core integration: OpenAPI
+/// schemas, route constraints, <see cref="TypeConverter"/> registrations, and
+/// <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> mapping for parse failures.
+/// Call <see cref="AddStrictId"/> to enable them all, or call each individually.
 /// </summary>
-/// <remarks>
-/// Route binding for StrictId types is already free in .NET 7+ via
-/// <see cref="ISpanParsable{TSelf}"/>; nothing in this class is required to make
-/// <c>[HttpGet("/users/{id}")]</c> work with an <see cref="Id{T}"/> parameter. The
-/// extensions here are polish on top of that: better OpenAPI, pre-dispatch filtering,
-/// legacy-binding support, and structured error responses.
-/// </remarks>
 public static class StrictIdAspNetCoreExtensions
 {
 	/// <summary>
@@ -47,20 +39,12 @@ public static class StrictIdAspNetCoreExtensions
 	}
 
 	/// <summary>
-	/// Registers the StrictId OpenAPI <see cref="OpenApiOptions.AddSchemaTransformer(Func{Microsoft.OpenApi.OpenApiSchema,OpenApiSchemaTransformerContext,CancellationToken,Task})"/>
-	/// transformer so that <see cref="Id{T}"/>, <see cref="IdNumber{T}"/>, and
-	/// <see cref="IdString{T}"/> (and their non-generic counterparts) appear in the
-	/// generated document as string schemas with per-closed-generic pattern, example,
-	/// and description.
+	/// Registers StrictId OpenAPI schema and operation transformers so that all StrictId
+	/// types appear in the generated document as string schemas with per-type pattern,
+	/// example, and description. Attached to all named OpenAPI documents.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
 	/// <returns>The same <paramref name="services"/> for chaining.</returns>
-	/// <remarks>
-	/// Uses <see cref="OptionsServiceCollectionExtensions.ConfigureAll{TOptions}(IServiceCollection,Action{TOptions})"/>
-	/// so the transformer is attached to every named OpenAPI document, not just the
-	/// default. Call this after <c>services.AddOpenApi()</c> — or before, since options
-	/// configuration runs lazily on first resolve.
-	/// </remarks>
 	public static IServiceCollection AddStrictIdOpenApi (this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -93,32 +77,15 @@ public static class StrictIdAspNetCoreExtensions
 	}
 
 	/// <summary>
-	/// Attaches <see cref="TypeConverterAttribute"/>s to every known StrictId value
-	/// type so legacy binding paths that use <see cref="TypeDescriptor.GetConverter(Type)"/>
-	/// — <c>System.Configuration</c>, some third-party model binders, designers, XAML
-	/// — can round-trip StrictIds through their string form.
+	/// Attaches <see cref="TypeConverterAttribute"/>s to every known StrictId value type
+	/// so that <see cref="TypeDescriptor.GetConverter(Type)"/>-based binding paths can
+	/// round-trip StrictIds through their string form. Walks <see cref="StrictIdRegistry"/>
+	/// to register closed generics for each entity type the source generator discovered.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
 	/// <returns>The same <paramref name="services"/> for chaining.</returns>
 	/// <remarks>
-	/// <para>
-	/// The non-generic <see cref="Id"/>, <see cref="IdNumber"/>, and <see cref="IdString"/>
-	/// are registered unconditionally. For the generic families, the extension walks
-	/// <see cref="StrictIdRegistry"/> — populated at module init by the StrictId source
-	/// generator — and registers the closed <c>IdTypeConverter&lt;T&gt;</c> /
-	/// <c>IdNumberTypeConverter&lt;T&gt;</c> / <c>IdStringTypeConverter&lt;T&gt;</c> per
-	/// entity. Entities that the generator did not see (for example when
-	/// <c>&lt;EnableStrictIdSourceGenerator&gt;false&lt;/EnableStrictIdSourceGenerator&gt;</c>)
-	/// still bind through <see cref="ISpanParsable{TSelf}"/> in modern ASP.NET Core; the
-	/// legacy converter path just won't fire for them.
-	/// </para>
-	/// <para>
-	/// Marked <see cref="RequiresDynamicCodeAttribute"/> because closing the generic
-	/// converter types over the enumerated entity types uses
-	/// <c>Type.MakeGenericType</c>. For trim / AOT builds, either call the explicit
-	/// <see cref="AddStrictIdTypeConverter{TEntity}"/> per entity or skip this extension
-	/// and rely on route / JSON binding exclusively.
-	/// </para>
+	/// For AOT builds, use <see cref="AddStrictIdTypeConverter{TEntity}"/> per entity instead.
 	/// </remarks>
 	[RequiresDynamicCode("Closes StrictId TypeConverter generics over registered entity types via Type.MakeGenericType.")]
 	public static IServiceCollection AddStrictIdTypeConverters (this IServiceCollection services)
@@ -134,11 +101,8 @@ public static class StrictIdAspNetCoreExtensions
 	}
 
 	/// <summary>
-	/// AOT-friendly companion to <see cref="AddStrictIdTypeConverters"/>: registers the
-	/// three closed-generic StrictId type converters (ULID, numeric, string) for a
-	/// single entity type without any reflection closing of open generics. Useful when
-	/// trimming or AOT-publishing an app whose entity types are not all visible to the
-	/// StrictId source generator.
+	/// AOT-friendly alternative to <see cref="AddStrictIdTypeConverters"/>: registers
+	/// StrictId type converters for a single entity type without reflection.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
 	/// <typeparam name="TEntity">The entity type for which to register converters.</typeparam>
@@ -155,20 +119,13 @@ public static class StrictIdAspNetCoreExtensions
 
 	/// <summary>
 	/// Registers the <see cref="StrictIdFormatExceptionHandler"/> as an
-	/// <see cref="Microsoft.AspNetCore.Diagnostics.IExceptionHandler"/> so unhandled
-	/// <see cref="FormatException"/>s originating in StrictId parsers are mapped to a
-	/// 400 Bad Request with a <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> body
-	/// carrying the verbose diagnostic from the failing parse.
+	/// <see cref="Microsoft.AspNetCore.Diagnostics.IExceptionHandler"/> so
+	/// <see cref="FormatException"/>s from StrictId parsers are mapped to 400 Bad Request
+	/// with a <see cref="Microsoft.AspNetCore.Mvc.ProblemDetails"/> body.
+	/// Non-StrictId exceptions fall through to the next handler.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
 	/// <returns>The same <paramref name="services"/> for chaining.</returns>
-	/// <remarks>
-	/// The handler is a no-op for exceptions that did not originate in StrictId, so
-	/// registering it alongside other <see cref="Microsoft.AspNetCore.Diagnostics.IExceptionHandler"/>
-	/// implementations is safe — control falls through to the next handler in order.
-	/// Requires the app to call <c>app.UseExceptionHandler()</c> in the pipeline for the
-	/// handler to be invoked.
-	/// </remarks>
 	public static IServiceCollection AddStrictIdProblemDetails (this IServiceCollection services)
 	{
 		ArgumentNullException.ThrowIfNull(services);
@@ -180,10 +137,7 @@ public static class StrictIdAspNetCoreExtensions
 	// ═════ Private helpers ═══════════════════════════════════════════════════
 
 	/// <summary>
-	/// Installs <see cref="TypeConverterAttribute"/>s on the three non-generic StrictId
-	/// types. Safe to call multiple times: <see cref="TypeDescriptor.AddAttributes(Type,Attribute[])"/>
-	/// appends rather than replacing, and the later attribute wins when both are
-	/// present, so repeated registrations produce a stable converter.
+	/// Installs <see cref="TypeConverterAttribute"/>s on the three non-generic StrictId types.
 	/// </summary>
 	private static void RegisterNonGenericTypeConverters ()
 	{
@@ -193,9 +147,7 @@ public static class StrictIdAspNetCoreExtensions
 	}
 
 	/// <summary>
-	/// Closes the three generic converter types over <paramref name="entityType"/> and
-	/// registers each as the <see cref="TypeConverterAttribute"/> for the matching
-	/// closed StrictId generic.
+	/// Registers closed StrictId type converters for <paramref name="entityType"/>.
 	/// </summary>
 	[RequiresDynamicCode("Uses Type.MakeGenericType to close StrictId TypeConverters over registered entity types.")]
 	private static void RegisterClosedGenericTypeConverters (Type entityType)

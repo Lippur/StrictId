@@ -7,11 +7,9 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed StrictId for entities of type <typeparamref name="T"/>.
-/// Values of <see cref="Id{T}"/> cannot be assigned to or compared with identifiers of a
-/// different entity type, which prevents accidental mix-ups at compile time. Backed by a
-/// <see cref="Ulid"/>; convertible losslessly to and from <see cref="Guid"/>, ULID string,
-/// and GUID string.
+/// A strongly-typed StrictId for entities of type <typeparamref name="T"/>. Values of
+/// different <typeparamref name="T"/>s cannot be assigned to or compared with each other.
+/// Backed by a <see cref="Ulid"/>; convertible losslessly to and from <see cref="Guid"/>.
 /// </summary>
 /// <typeparam name="T">
 /// The entity type this identifier belongs to. Used only as a compile-time tag and as the

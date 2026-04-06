@@ -2,9 +2,7 @@ namespace StrictId.Internal;
 
 /// <summary>
 /// Canonical formatter for Guid-backed StrictIds. Writes prefix-aware canonical forms
-/// or bare standard Guid format specifiers to a destination span. When no prefix is
-/// declared, output is identical to <see cref="Guid.ToString()"/> — the type adds zero
-/// observable overhead for unprefixed use.
+/// or bare standard Guid format specifiers to a destination span.
 /// </summary>
 internal static class GuidFormatter
 {

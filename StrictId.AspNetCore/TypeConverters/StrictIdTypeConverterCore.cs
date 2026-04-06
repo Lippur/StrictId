@@ -4,27 +4,9 @@ using System.Globalization;
 namespace StrictId.AspNetCore.TypeConverters;
 
 /// <summary>
-/// Shared logic for all StrictId <see cref="TypeConverter"/> subclasses. Centralises
-/// the <c>string ⇄ IStrictId</c> conversion by delegating parse/format to the static
-/// members of <see cref="IStrictId{TSelf}"/> so each family's concrete converter is a
-/// one-line pass-through to the appropriate closed generic.
+/// Base <see cref="TypeConverter"/> for StrictId types. Delegates parse/format to the
+/// static members of <see cref="IStrictId{TSelf}"/>.
 /// </summary>
-/// <remarks>
-/// <para>
-/// StrictId values are already parseable via <see cref="ISpanParsable{TSelf}"/> on
-/// .NET 7+, which is the path used by ASP.NET Core model binding in modern apps. This
-/// <see cref="TypeConverter"/> exists strictly for legacy surfaces that predate
-/// <see cref="IParsable{TSelf}"/>: XAML, WPF/WinForms designers, <see cref="TypeDescriptor"/>-
-/// driven serializers, the obsolete <c>System.Configuration</c> binding path, and
-/// third-party libraries that probe for a converter via <see cref="TypeConverterAttribute"/>
-/// before trying anything else.
-/// </para>
-/// <para>
-/// Converters are stateless singletons — instantiation is free and the cached
-/// <see cref="TypeConverterAttribute"/> registration hands out the same instance to
-/// every call site.
-/// </para>
-/// </remarks>
 /// <typeparam name="T">The concrete StrictId value type this converter handles.</typeparam>
 public abstract class StrictIdTypeConverter<T> : TypeConverter
 	where T : struct, IStrictId<T>

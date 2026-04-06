@@ -15,8 +15,7 @@ public class IdNumberToLongConverter () : ValueConverter<IdNumber, long>(
 
 /// <summary>
 /// EF Core value converter that stores <see cref="IdNumber{T}"/> as a 64-bit signed
-/// integer (<c>bigint</c>). In v3 the prefix is a C# type-system concept carried by
-/// <typeparamref name="T"/>; only the bare decimal value is persisted.
+/// integer (<c>bigint</c>). Prefixes are not stored.
 /// </summary>
 /// <typeparam name="T">The entity type of the <see cref="IdNumber{T}"/>.</typeparam>
 public class IdNumberToLongConverter<T> () : ValueConverter<IdNumber<T>, long>(

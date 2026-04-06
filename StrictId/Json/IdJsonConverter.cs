@@ -59,13 +59,6 @@ public sealed class IdJsonConverter : JsonConverter<Id>
 /// when <typeparamref name="T"/> has a registered <see cref="IdPrefixAttribute"/>,
 /// otherwise the bare ULID.
 /// </summary>
-/// <remarks>
-/// This type is instantiated directly by generated code (StrictId source generator)
-/// and registered into <see cref="StrictIdRegistry"/> so the
-/// <see cref="IdTypedJsonConverterFactory"/> can resolve it without
-/// <see cref="Type.MakeGenericType(Type[])"/>. Users who hand-register a converter
-/// can also construct it explicitly: <c>new IdTypedJsonConverter&lt;User&gt;()</c>.
-/// </remarks>
 /// <typeparam name="T">The entity type of the <see cref="Id{T}"/>.</typeparam>
 public sealed class IdTypedJsonConverter<T> : JsonConverter<Id<T>>
 {
@@ -112,21 +105,9 @@ public sealed class IdTypedJsonConverter<T> : JsonConverter<Id<T>>
 
 /// <summary>
 /// <see cref="JsonConverterFactory"/> that produces a <see cref="JsonConverter{T}"/>
-/// for each closed <see cref="Id{T}"/>. Consults <see cref="StrictIdRegistry"/> first
-/// for a pre-registered instance (emitted by the StrictId source generator for every
-/// <c>[IdPrefix]</c>-decorated type visible at compile time); falls back to
-/// <see cref="Activator.CreateInstance(Type)"/> on a runtime reflection path for types
-/// the generator did not see.
+/// for each closed <see cref="Id{T}"/>. Consults <see cref="StrictIdRegistry"/> first;
+/// falls back to reflection for types the source generator did not see.
 /// </summary>
-/// <remarks>
-/// <para>
-/// The reflection fallback is annotated with <see cref="RequiresDynamicCodeAttribute"/>
-/// and <see cref="RequiresUnreferencedCodeAttribute"/> because it depends on
-/// <see cref="Type.MakeGenericType(Type[])"/>. Consumers targeting AOT should ensure
-/// every <c>Id&lt;T&gt;</c> they serialize is registered — the generator does this
-/// automatically for any type that declares <c>[IdPrefix]</c>.
-/// </para>
-/// </remarks>
 public sealed class IdTypedJsonConverterFactory : JsonConverterFactory
 {
 	/// <inheritdoc />

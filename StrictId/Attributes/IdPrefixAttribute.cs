@@ -1,18 +1,13 @@
 namespace StrictId;
 
 /// <summary>
-/// Declares a prefix string for a StrictId entity type. The attribute is repeatable:
-/// multiple prefixes may be registered for a single type, with exactly one marked as
-/// <see cref="IsDefault"/> — the canonical one used on output. All registered prefixes
-/// are accepted on parse, enabling legacy aliasing and short-form URLs without breaking
-/// round-trip.
+/// Declares a prefix string for a StrictId entity type. Repeatable: multiple prefixes
+/// may be registered, with exactly one marked <see cref="IsDefault"/> (the canonical
+/// one used on output). All registered prefixes are accepted on parse.
 /// </summary>
 /// <remarks>
-/// A valid prefix matches <c>^[a-z][a-z0-9_]{0,62}$</c> — a lowercase ASCII letter
-/// followed by up to 62 additional lowercase alphanumeric or underscore characters
-/// (63 characters maximum). Grammar is validated by the StrictId analyser at compile
-/// time and by the runtime prefix metadata resolver on first access, as a defence in
-/// depth.
+/// A valid prefix matches <c>^[a-z][a-z0-9_]{0,62}$</c> (max 63 characters).
+/// Validated at compile time by the StrictId analyser and at runtime on first access.
 /// </remarks>
 [AttributeUsage(AttributeTargets.Class | AttributeTargets.Struct, AllowMultiple = true, Inherited = true)]
 public sealed class IdPrefixAttribute (string prefix) : Attribute

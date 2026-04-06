@@ -7,19 +7,16 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed integer StrictId for entities of type
-/// <typeparamref name="T"/>. Backed by a <see cref="ulong"/>. Values of different
-/// <typeparamref name="T"/>s cannot be assigned to or compared with each other, which
-/// prevents accidentally mixing up identifiers across entities at compile time.
+/// A strongly-typed integer StrictId for entities of type <typeparamref name="T"/>.
+/// Backed by a <see cref="ulong"/>. Values of different <typeparamref name="T"/>s cannot
+/// be assigned to or compared with each other.
 /// </summary>
 /// <typeparam name="T">
 /// The entity type this identifier belongs to. Used only as a compile-time tag and as
 /// the key for per-type prefix resolution via <see cref="IdPrefixAttribute"/>.
 /// </typeparam>
 /// <remarks>
-/// StrictId never invents a numeric ID client-side: there is no <c>NewId()</c> method
-/// on this type. Numeric IDs come from the database (via EF Core's identity columns)
-/// or from the user's own code.
+/// There is no <c>NewId()</c> — numeric IDs come from the database or user code.
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdNumberTypedJsonConverterFactory))]
 public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>, IComparable

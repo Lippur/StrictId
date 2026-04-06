@@ -22,7 +22,7 @@ public sealed class Order;
 [IdPrefix("inv")]
 public sealed class Invoice;
 
-/// <summary>A Stripe-style customer entity: <c>cus</c> prefix, alphanumeric suffix up to 32 chars.</summary>
+/// <summary>A customer entity: <c>cus</c> prefix, alphanumeric suffix up to 32 chars.</summary>
 [IdPrefix("cus")]
 [IdString(MaxLength = 32, CharSet = IdStringCharSet.Alphanumeric)]
 public sealed class Customer;

@@ -2,28 +2,16 @@ namespace StrictId;
 
 /// <summary>
 /// The set of characters permitted between the prefix and the suffix of a StrictId.
-/// The set is deliberately closed: every value is unambiguous against the grammar of
-/// all three ID families, visually distinct, keyboard-reachable, and collision-free
-/// against every suffix form.
 /// </summary>
 public enum IdSeparator
 {
-	/// <summary>
-	/// Underscore (<c>_</c>). Default. URL-safe, and the most
-	/// greppable of the four options.
-	/// </summary>
+	/// <summary>Underscore (<c>_</c>). Default. URL-safe.</summary>
 	Underscore,
 
-	/// <summary>
-	/// Forward slash (<c>/</c>). Path-like. Avoid for IDs that appear in URL path
-	/// segments.
-	/// </summary>
+	/// <summary>Forward slash (<c>/</c>). Requires URL-encoding in path segments.</summary>
 	Slash,
 
-	/// <summary>
-	/// Period (<c>.</c>). Reads naturally as a namespace separator, as in
-	/// <c>user.42</c> or <c>tenant.order.7</c>.
-	/// </summary>
+	/// <summary>Period (<c>.</c>).</summary>
 	Period,
 
 	/// <summary>

@@ -4,9 +4,8 @@ namespace StrictId.EFCore.ValueConverters;
 
 /// <summary>
 /// EF Core value converter that stores <see cref="Id"/> as a fixed-length 26-character
-/// lowercase Crockford base32 ULID string — the bare form, without any prefix. In v3
-/// the prefix is a C# type-system concept carried by the entity type; it never appears
-/// in the database.
+/// lowercase Crockford base32 ULID string. Only the bare ULID is persisted; prefixes
+/// are not stored.
 /// </summary>
 public class IdToStringConverter () : ValueConverter<Id, string>(
 	id => id.ToString("B"),
@@ -15,9 +14,8 @@ public class IdToStringConverter () : ValueConverter<Id, string>(
 
 /// <summary>
 /// EF Core value converter that stores <see cref="Id{T}"/> as a fixed-length
-/// 26-character lowercase Crockford base32 ULID string — the bare form, without any
-/// prefix. In v3 the prefix is a C# type-system concept carried by <typeparamref name="T"/>;
-/// it never appears in the database.
+/// 26-character lowercase Crockford base32 ULID string. Only the bare ULID is
+/// persisted; prefixes are not stored.
 /// </summary>
 /// <typeparam name="T">The entity type of the <see cref="Id{T}"/>.</typeparam>
 public class IdToStringConverter<T> () : ValueConverter<Id<T>, string>(

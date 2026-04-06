@@ -9,22 +9,12 @@ namespace StrictId.EFCore.Conventions;
 
 /// <summary>
 /// EF Core convention that applies the correct StrictId value converter to any
-/// property typed as <see cref="Id{T}"/>, <see cref="IdNumber{T}"/>, or
-/// <see cref="IdString{T}"/>. For <see cref="IdString{T}"/> properties, the convention
-/// also applies the per-entity maximum suffix length declared by any
-/// <see cref="IdStringAttribute"/> on the entity type.
+/// property typed as <see cref="Id{T}"/>, <see cref="IdNumber{T}"/>,
+/// <see cref="IdString{T}"/>, or <see cref="Guid{T}"/>. For <see cref="IdString{T}"/>
+/// properties, the convention also applies the per-entity maximum suffix length from
+/// <see cref="IdStringAttribute"/>. Consults <see cref="StrictIdEfCoreRegistry"/> for
+/// a pre-constructed converter; falls back to reflection on miss.
 /// </summary>
-/// <remarks>
-/// <para>
-/// The convention first consults <see cref="StrictIdEfCoreRegistry"/> for a
-/// pre-constructed <see cref="ValueConverter"/>. Entries are populated by the StrictId
-/// source generator for every <c>[IdPrefix]</c>-decorated type visible at compile time,
-/// which keeps the hot model-build path free of <see cref="Type.MakeGenericType(Type[])"/>
-/// and its associated trim / AOT warnings. On a miss the convention falls back to
-/// <see cref="Activator.CreateInstance(Type)"/> on a closed generic, which is still
-/// functionally correct but is annotated as dynamic-code-dependent.
-/// </para>
-/// </remarks>
 public class IdConvention : IPropertyAddedConvention
 {
 	/// <inheritdoc />

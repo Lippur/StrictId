@@ -10,12 +10,6 @@ namespace StrictId.Json;
 /// when <typeparamref name="T"/> has a registered <see cref="IdPrefixAttribute"/>,
 /// otherwise the standard 36-character hyphenated GUID.
 /// </summary>
-/// <remarks>
-/// This type is instantiated directly by generated code (StrictId source generator)
-/// and registered into <see cref="StrictIdRegistry"/> so the
-/// <see cref="GuidTypedJsonConverterFactory"/> can resolve it without
-/// <see cref="Type.MakeGenericType(Type[])"/>.
-/// </remarks>
 /// <typeparam name="T">The entity type of the <see cref="Guid{T}"/>.</typeparam>
 public sealed class GuidTypedJsonConverter<T> : JsonConverter<Guid<T>>
 {

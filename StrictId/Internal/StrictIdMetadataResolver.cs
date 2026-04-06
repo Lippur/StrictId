@@ -2,34 +2,23 @@ namespace StrictId.Internal;
 
 /// <summary>
 /// Reflection-based resolver for StrictId prefix, separator, and string-option metadata.
-/// Walks a type's inheritance chain honouring the full-replacement override rule from
-/// the v3 design: the first type in the chain (starting from the leaf) that declares the
-/// attribute wins, and base-type declarations are hidden rather than merged.
+/// Walks a type's inheritance chain: the first type in the chain (starting from the leaf)
+/// that declares the attribute wins, and base-type declarations are hidden rather than
+/// merged. Used as a fallback when the source generator did not pre-populate
+/// <see cref="StrictIdRegistry"/> for a given type.
 /// </summary>
-/// <remarks>
-/// This is the runtime fallback path. The StrictId source generator emits pre-resolved
-/// metadata into <see cref="StrictIdRegistry"/> at module initialisation time so that
-/// closed generics whose entity types were visible at compile time skip this reflection
-/// path entirely. When the generator is disabled (via the MSBuild property
-/// <c>EnableStrictIdSourceGenerator=false</c>) or the entity type is defined in an
-/// assembly the generator did not see, the resolver falls back to walking the attributes
-/// with reflection so the library still works at full correctness.
-/// </remarks>
 internal static class StrictIdMetadataResolver
 {
 	/// <summary>
 	/// Resolves the prefix and separator metadata for the given entity <paramref name="type"/>.
-	/// First consults <see cref="StrictIdRegistry"/> for a pre-resolved entry (emitted by
-	/// the source generator); on miss, validates prefix grammar, default cardinality, and
-	/// uniqueness on the fly via reflection and throws <see cref="InvalidOperationException"/>
-	/// with a verbose, developer-oriented message if the attribute declarations on
-	/// <paramref name="type"/> are malformed.
+	/// Consults <see cref="StrictIdRegistry"/> first; on miss, walks the type's attributes
+	/// via reflection and validates prefix grammar, default cardinality, and uniqueness.
 	/// </summary>
 	/// <param name="type">The entity type to resolve.</param>
 	/// <returns>The resolved <see cref="PrefixInfo"/>. Never <see langword="null"/>.</returns>
 	/// <exception cref="InvalidOperationException">
-	/// The attribute declarations on <paramref name="type"/> (or on a base type from which
-	/// it inherits the declarations) violate one of the rules from the v3 design document.
+	/// The attribute declarations on <paramref name="type"/> are malformed (invalid grammar,
+	/// missing or multiple defaults, or duplicate prefixes).
 	/// </exception>
 	public static PrefixInfo ResolvePrefix (Type type)
 	{

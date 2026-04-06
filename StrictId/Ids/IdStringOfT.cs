@@ -7,11 +7,9 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed string StrictId for entities of type
-/// <typeparamref name="T"/>. Wraps an opaque string intended for third-party IDs
-/// (Stripe <c>cus_...</c>, Twilio <c>SM...</c>), legacy IDs, slugs, or SKUs. Values
-/// of different <typeparamref name="T"/>s cannot be assigned to or compared with
-/// each other, preventing accidental mix-ups across entities at compile time.
+/// A strongly-typed string StrictId for entities of type <typeparamref name="T"/>.
+/// Wraps an opaque string value. Values of different <typeparamref name="T"/>s cannot
+/// be assigned to or compared with each other.
 /// </summary>
 /// <typeparam name="T">
 /// The entity type this identifier belongs to. Used as a compile-time tag and as the
@@ -19,31 +17,16 @@ namespace StrictId;
 /// <see cref="IdPrefixAttribute"/> and <see cref="IdStringAttribute"/>.
 /// </typeparam>
 /// <remarks>
-/// <para>
 /// Validation rules come from <see cref="IdStringAttribute"/> on <typeparamref name="T"/>
 /// or defaults (max length 255, <see cref="IdStringCharSet.AlphanumericDashUnderscore"/>,
-/// case-sensitive).
-/// When <see cref="IdStringAttribute.IgnoreCase"/> is <see langword="true"/> the
-/// stored value is normalized to lowercase on construction so that equality and
-/// comparison work correctly without fighting the record struct auto-generated
-/// members.
-/// </para>
-/// <para>
-/// The <see cref="Value"/> property may be <see langword="null"/> for a
-/// default-constructed instance; use <see cref="HasValue"/> to distinguish a real
-/// value from the default.
-/// </para>
+/// case-sensitive). When <see cref="IdStringAttribute.IgnoreCase"/> is
+/// <see langword="true"/>, values are normalized to lowercase on construction.
+/// <see cref="Value"/> may be <see langword="null"/> for a default-constructed instance.
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdStringTypedJsonConverterFactory))]
 public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 {
 	/// <summary>The underlying string suffix value. May be <see langword="null"/> for a default-constructed instance.</summary>
-	/// <remarks>
-	/// The <c>init</c> accessor is <c>internal</c>: user code cannot bypass the validating
-	/// constructor by writing <c>new IdString&lt;T&gt; { Value = "..." }</c>. StrictId's
-	/// own internal parsers use the init accessor as an escape hatch to avoid re-validation
-	/// of values they have already validated and normalised.
-	/// </remarks>
 	public string Value { get; internal init; }
 
 	/// <summary>
@@ -124,13 +107,9 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 
 	/// <summary>
 	/// Converts this typed <see cref="IdString{T}"/> into a non-generic <see cref="IdString"/>,
-	/// erasing the entity type. The underlying string is copied verbatim — because the
-	/// typed form has already validated and normalised it, the non-generic form is constructed
-	/// via the internal <c>init</c> accessor rather than routed through the non-generic
-	/// validating constructor. This guarantees that erasing the type is infallible, even when
-	/// <typeparamref name="T"/>'s <see cref="IdStringAttribute"/> rules (e.g. larger
-	/// <see cref="IdStringAttribute.MaxLength"/>) would reject the value under the non-generic
-	/// defaults.
+	/// erasing the entity type. The underlying string is copied verbatim. This conversion
+	/// is infallible regardless of validation-rule differences between the typed and
+	/// non-generic forms.
 	/// </summary>
 	public IdString ToIdString () => Value is null ? default : new IdString { Value = Value };
 

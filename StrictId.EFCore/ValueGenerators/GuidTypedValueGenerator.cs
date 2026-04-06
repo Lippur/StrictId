@@ -6,9 +6,7 @@ namespace StrictId.EFCore.ValueGenerators;
 
 /// <summary>
 /// EF Core value generator that produces a fresh <see cref="Guid{T}"/> via
-/// <see cref="Guid{T}.NewId()"/> (UUIDv7) whenever a new entity is added. UUIDv7
-/// is preferred over UUIDv4 for value generation because its time-sorted structure
-/// is friendlier to clustered indexes.
+/// <see cref="Guid{T}.NewId()"/> (UUIDv7) whenever a new entity is added.
 /// </summary>
 public class GuidTypedValueGenerator<T> : ValueGenerator<Guid<T>>
 {

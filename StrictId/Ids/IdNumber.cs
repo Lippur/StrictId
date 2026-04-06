@@ -8,15 +8,10 @@ namespace StrictId;
 
 /// <summary>
 /// A non-generic, type-erased integer-backed StrictId. Wraps a <see cref="ulong"/>
-/// (0..18446744073709551615) and is intended for type-erased numeric-ID scenarios such
-/// as logging, diagnostics, and generic plumbing. For type-safe numeric identifiers
-/// that cannot be mixed across entities, prefer <see cref="IdNumber{T}"/>.
+/// (0..18446744073709551615). For type-safe numeric identifiers, use
+/// <see cref="IdNumber{T}"/>. There is no <c>NewId()</c> — numeric IDs come from the
+/// database or user code.
 /// </summary>
-/// <remarks>
-/// StrictId never invents a numeric ID client-side: there is no <c>NewId()</c> method
-/// for the numeric family. Numeric IDs come from the database (via EF Core's identity
-/// columns) or from the user's own code.
-/// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdNumberJsonConverter))]
 public readonly record struct IdNumber (ulong Value) : IStrictId<IdNumber>, IComparable
 {

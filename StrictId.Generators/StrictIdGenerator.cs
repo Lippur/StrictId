@@ -6,28 +6,13 @@ using Microsoft.CodeAnalysis.CSharp.Syntax;
 namespace StrictId.Generators;
 
 /// <summary>
-/// Roslyn incremental source generator that emits <see cref="System.Runtime.CompilerServices.ModuleInitializerAttribute"/>
-/// calls populating <c>StrictId.StrictIdRegistry</c> with the prefix and string-option
-/// metadata for every user-code type decorated with <c>[IdPrefix]</c>, <c>[IdString]</c>,
-/// or an inherited combination of the two.
+/// Roslyn incremental source generator that emits <c>[ModuleInitializer]</c> calls
+/// populating <c>StrictIdRegistry</c> with prefix and string-option metadata for every
+/// type decorated with <c>[IdPrefix]</c>, <c>[IdString]</c>, or both. Types the
+/// generator did not see still work via the runtime reflection fallback. Only types
+/// that directly declare a StrictId attribute are captured; inherited-only declarations
+/// fall through to the reflection path.
 /// </summary>
-/// <remarks>
-/// <para>
-/// The goal is to eliminate the runtime reflection walk performed by
-/// <c>StrictIdMetadataResolver</c> for every closed generic <c>Id&lt;T&gt;</c>,
-/// <c>IdNumber&lt;T&gt;</c>, or <c>IdString&lt;T&gt;</c> visible at compile time. Types
-/// that the generator did not see (for example, because they live in an assembly that
-/// was not part of the generator's compilation input) still work correctly via the
-/// reflection fallback path.
-/// </para>
-/// <para>
-/// The generator scope is intentionally limited to types that directly declare one of
-/// the StrictId attributes. Types that inherit an attribute from a base class without
-/// redeclaring it are not captured here; they fall through to the reflection path at
-/// runtime, which walks the hierarchy correctly. Phase 9 will add analyzers that warn
-/// on patterns the generator cannot help with.
-/// </para>
-/// </remarks>
 [Generator]
 public sealed class StrictIdGenerator : IIncrementalGenerator
 {

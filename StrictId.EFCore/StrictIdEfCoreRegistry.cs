@@ -5,24 +5,13 @@ namespace StrictId.EFCore;
 
 /// <summary>
 /// Process-wide registry of pre-constructed EF Core <see cref="ValueConverter"/>
-/// instances for closed StrictId types. The StrictId source generator emits calls into
-/// this registry from a <c>[ModuleInitializer]</c> for every <c>[IdPrefix]</c>-decorated
-/// type, so that <see cref="Conventions.IdConvention"/> can reach the concrete typed
-/// converter without closing an open generic via <see cref="Type.MakeGenericType(Type[])"/>
-/// on model-build.
+/// instances for closed StrictId types. Populated at module initialisation by the
+/// source generator so that <see cref="Conventions.IdConvention"/> can resolve the
+/// concrete typed converter without reflection.
 /// </summary>
 /// <remarks>
-/// <para>
-/// The registry lives in <c>StrictId.EFCore</c> rather than in the core package because
-/// <see cref="ValueConverter"/> is defined in EF Core. Consumers who don't reference
-/// <c>StrictId.EFCore</c> don't pay for this type; the generator detects whether the
-/// consumer's compilation references EF Core and emits registrations only when it does.
-/// </para>
-/// <para>
-/// Manual use is permitted but discouraged — the generator is the intended producer.
-/// Calling <see cref="RegisterValueConverter{TId}"/> after the convention has already
-/// built a model for the entity type has no effect on that model.
-/// </para>
+/// Registration must happen before the convention builds a model for the entity type.
+/// Registrations added after model-build have no effect on that model.
 /// </remarks>
 public static class StrictIdEfCoreRegistry
 {

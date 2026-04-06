@@ -7,17 +7,9 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A non-generic, type-erased StrictId backed by a <see cref="Ulid"/>. Use for
-/// scenarios where the entity type is intentionally discarded — logging, generic
-/// transport, diagnostics, or dictionary keys where the caller does not care about
-/// the originating type.
+/// A non-generic, type-erased StrictId backed by a <see cref="Ulid"/>.
+/// For type-safe identifiers, use <see cref="Id{T}"/>.
 /// </summary>
-/// <remarks>
-/// For type-safe identifiers that cannot be accidentally mixed across entities, prefer
-/// <see cref="Id{T}"/>. Conversion from <see cref="Id{T}"/> to <see cref="Id"/>
-/// requires an explicit cast because it discards the entity type; conversion
-/// in the reverse direction is implicit because no type information is lost.
-/// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdJsonConverter))]
 public readonly record struct Id (Ulid Value) : IStrictId<Id>, IComparable
 {

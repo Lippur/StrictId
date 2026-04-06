@@ -20,7 +20,7 @@ public sealed class User;
 [IdPrefix("ord")]
 public sealed class Order;
 
-/// <summary>Stripe-style customer entity with an alphanumeric string ID constraint.</summary>
+/// <summary>Customer entity with an alphanumeric string ID constraint.</summary>
 [IdPrefix("cus")]
 [IdString(MaxLength = 32, CharSet = IdStringCharSet.Alphanumeric)]
 public sealed class Customer;

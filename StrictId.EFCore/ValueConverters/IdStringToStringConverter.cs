@@ -4,8 +4,7 @@ namespace StrictId.EFCore.ValueConverters;
 
 /// <summary>
 /// EF Core value converter that stores <see cref="IdString"/> as its underlying bare
-/// suffix. In v3 the prefix is a C# type-system concept; only the bare string value is
-/// persisted.
+/// suffix. Prefixes are not stored.
 /// </summary>
 public class IdStringToStringConverter () : ValueConverter<IdString, string>(
 	id => id.Value,
@@ -14,8 +13,7 @@ public class IdStringToStringConverter () : ValueConverter<IdString, string>(
 
 /// <summary>
 /// EF Core value converter that stores <see cref="IdString{T}"/> as its underlying
-/// bare suffix. In v3 the prefix is a C# type-system concept carried by
-/// <typeparamref name="T"/>; only the bare string value is persisted.
+/// bare suffix. Prefixes are not stored.
 /// </summary>
 /// <typeparam name="T">The entity type of the <see cref="IdString{T}"/>.</typeparam>
 public class IdStringToStringConverter<T> () : ValueConverter<IdString<T>, string>(

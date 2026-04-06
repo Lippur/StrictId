@@ -166,8 +166,7 @@ public class IdStringTests
 	[Test]
 	public void Constructor_ThirdPartyIdWithDashOrUnderscore_AcceptedByDefault ()
 	{
-		// Default charset AlphanumericDashUnderscore accepts the common separators
-		// found in third-party IDs (Stripe cus_..., slug-style, etc.).
+		// Default charset AlphanumericDashUnderscore accepts dashes and underscores.
 		new IdString("cus_L8x9Kq4YZ").Value.Should().Be("cus_L8x9Kq4YZ");
 		new IdString("my-item-42").Value.Should().Be("my-item-42");
 	}

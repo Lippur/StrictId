@@ -7,17 +7,8 @@ namespace StrictId.AspNetCore.OpenApi;
 /// <summary>
 /// Operation-level transformer that rewrites the schemas of path, query, header, and
 /// form parameters whose CLR type is a StrictId value type. Complements
-/// <see cref="StrictIdSchemaTransformer"/>, which only fires for body / response
-/// schemas in .NET 10 — path parameters bound via <see cref="ISpanParsable{TSelf}"/>
-/// bypass the JSON type-info schema path and have their <c>string</c> schemas built
-/// directly from the model binder's expected shape.
+/// <see cref="StrictIdSchemaTransformer"/>, which only fires for body/response schemas.
 /// </summary>
-/// <remarks>
-/// The transformer walks <see cref="Microsoft.AspNetCore.Mvc.ApiExplorer.ApiDescription.ParameterDescriptions"/>
-/// to recover each parameter's CLR type, matches it against the six StrictId shapes,
-/// and writes the family-specific pattern, example, and description into the matching
-/// parameter's schema via <see cref="StrictIdSchemaBuilder"/>.
-/// </remarks>
 internal sealed class StrictIdOperationTransformer
 {
 	/// <summary>

@@ -10,12 +10,9 @@ namespace StrictId.Json;
 /// the canonical base-10 digit string. Supports usage as a JSON object key.
 /// </summary>
 /// <remarks>
-/// <para>
-/// IdNumbers are always serialized as JSON <em>strings</em>, not JSON numbers. This keeps
-/// the three StrictId families consistent, preserves any prefix on the typed counterpart
-/// <see cref="IdNumber{T}"/>, and avoids the 53-bit precision cliff that affects JSON
-/// numbers consumed by JavaScript clients.
-/// </para>
+/// IdNumbers are serialized as JSON strings, not JSON numbers. This preserves any
+/// prefix on the typed <see cref="IdNumber{T}"/> and avoids the 53-bit precision
+/// limit of JSON numbers in JavaScript clients.
 /// </remarks>
 public sealed class IdNumberJsonConverter : JsonConverter<IdNumber>
 {
@@ -63,9 +60,8 @@ public sealed class IdNumberJsonConverter : JsonConverter<IdNumber>
 
 /// <summary>
 /// Concrete <see cref="JsonConverter{T}"/> for a closed <see cref="IdNumber{T}"/>.
-/// Constructed directly by generated code (StrictId source generator) and registered
-/// into <see cref="StrictIdRegistry"/> so the <see cref="IdNumberTypedJsonConverterFactory"/>
-/// can resolve it without <see cref="Type.MakeGenericType(Type[])"/>.
+/// Reads any form <see cref="IdNumber{T}.Parse(string)"/> accepts; writes the canonical
+/// prefixed form when <typeparamref name="T"/> has a registered prefix, otherwise bare digits.
 /// </summary>
 /// <typeparam name="T">The entity type of the <see cref="IdNumber{T}"/>.</typeparam>
 public sealed class IdNumberTypedJsonConverter<T> : JsonConverter<IdNumber<T>>

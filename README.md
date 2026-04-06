@@ -20,7 +20,7 @@ public class User
     public Id<User> Id { get; init; } = Id<User>.NewId();         // user_01knfv9xv03499c7bf2brngecz
     public Guid<Tenant> TenantId { get; set; }                     // Guid<T>, strongly-typed Guid
     public IdNumber<Invoice> LatestInvoice { get; set; }           // inv_42, bigint-backed
-    public IdString<StripeCustomer> StripeId { get; set; }         // cus_abcDEF123, opaque string
+    public IdString<ExternalAccount> ExternalId { get; set; }       // ext_abcDEF123, opaque string
 }
 ```
 
@@ -33,7 +33,7 @@ It's just generic structs and attributes. Decorate your entities with `[IdPrefix
 - **Ulid, but more.** If you already use the [Ulid](https://github.com/Cysharp/Ulid) library, `Id<T>` wraps it with type safety, prefixed string forms, JSON converters, and EF Core/ASP.NET integration on top.
 - **Covers every backing type.** Whether you use Guid, Ulid, slugs, numbers, or all four at the same time, StrictId works seamlessly and consistently. 
 - **Drop-in Guid replacement.** `Guid<T>` mirrors the `System.Guid` API, so switching is mostly find-and-replace. Existing database columns work without migration.
-- **Robust and reliable.** Lack of magic and 400+ unit and integration tests make sure I don't cause you any sleepless nights
+- **Robust and reliable.** The core implementation is just a simple trusty generic struct, and 550+ unit and integration tests make sure I don't cause you any sleepless nights with the more complex parts.
 
 ## Get started
 
@@ -186,20 +186,20 @@ IdNumber<Invoice> id = 42;
 
 ### IdString\<T\>, opaque strings
 
-For third-party IDs (Stripe `cus_...`, Twilio `SM...`), slugs, SKUs, and legacy string keys, anything where the ID is an externally-defined string.
+For third-party IDs, slugs, SKUs, and legacy string keys — anything where the ID is an externally-defined string.
 
 ```csharp
-[IdPrefix("cus")]
+[IdPrefix("ext")]
 [IdString(MaxLength = 32, CharSet = IdStringCharSet.Alphanumeric)]
-public class StripeCustomer;
+public class ExternalAccount;
 
-var id = IdString<StripeCustomer>.Parse("cus_AL8x9Kq4YZ");
-id.ToString();       // "cus_AL8x9Kq4YZ"
+var id = IdString<ExternalAccount>.Parse("ext_AL8x9Kq4YZ");
+id.ToString();       // "ext_AL8x9Kq4YZ"
 id.ToString("B");    // "AL8x9Kq4YZ"
 id.ToBareString();   // "AL8x9Kq4YZ"
 
 // Implicit from string
-IdString<StripeCustomer> id = "AL8x9Kq4YZ";
+IdString<ExternalAccount> id = "AL8x9Kq4YZ";
 ```
 
 Validation rules are declared per type with `[IdString]`:
@@ -390,9 +390,8 @@ Six Roslyn analysers ship inside the main package:
 v3 is a ground-up rewrite, but your existing IDs should continue to work in most cases. The highlights:
 
 - `new Id<T>("string")` is gone, use `Id<T>.Parse("string")`
-- Default `ToString()` is now lowercase, use `"U"` format specifier for v2 uppercase
-- `Id<T>` to `Id` conversion is now explicit (other direction stays implicit)
-- `IId` interface replaced by `IStrictId<TSelf>`
+- Default `ToString()` is now lowercase, use `"U"` format specifier for uppercase
+- New formats added, so you can convert more identifiers like slugs (`IdString`) and invoice numbers (`IdNumber`)
 
 ## Acknowledgements
 

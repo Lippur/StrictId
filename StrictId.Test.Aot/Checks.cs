@@ -146,7 +146,7 @@ internal static class Checks
 		{
 			UserId = Id<User>.NewId(),
 			InvoiceNumber = new IdNumber<Invoice>(42UL),
-			CustomerKey = new IdString<Customer>("cus_stripelike1"),
+			CustomerKey = new IdString<Customer>("cus_external1"),
 			BareId = Id.NewId(),
 			BareNumber = new IdNumber(7UL),
 			BareString = new IdString("bare-value"),

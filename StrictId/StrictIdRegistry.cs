@@ -5,21 +5,16 @@ using StrictId.Internal;
 namespace StrictId;
 
 /// <summary>
-/// Process-wide registry of pre-resolved StrictId metadata. The StrictId source
-/// generator emits calls into this registry from a <c>[ModuleInitializer]</c> so that
-/// <see cref="Id{T}"/>, <see cref="IdNumber{T}"/>, and <see cref="IdString{T}"/> can
-/// reconstitute their prefix / string-option metadata without walking user-code
-/// attributes via reflection. The reflection path in <c>StrictIdMetadataResolver</c>
-/// is preserved as a fallback so the library still works correctly when the generator
-/// is disabled via <c>&lt;EnableStrictIdSourceGenerator&gt;false&lt;/EnableStrictIdSourceGenerator&gt;</c>.
+/// Process-wide registry of pre-resolved StrictId metadata. Populated at module
+/// initialisation by the source generator so that <see cref="Id{T}"/>,
+/// <see cref="IdNumber{T}"/>, and <see cref="IdString{T}"/> can resolve prefix and
+/// string-option metadata without reflection. When the generator is disabled, the
+/// library falls back to reflection via <c>StrictIdMetadataResolver</c>.
 /// </summary>
 /// <remarks>
-/// <para>
-/// Manual use is permitted but discouraged — the generator is the intended producer.
-/// Calling a register method after the type's <c>StrictIdMetadata&lt;T&gt;</c> static
-/// constructor has already run has no effect on that type's cached <c>Prefix</c>
-/// field; registration must happen at module initialisation time to be observable.
-/// </para>
+/// Registration must happen at module initialisation time. Calling a register method
+/// after the type's <c>StrictIdMetadata&lt;T&gt;</c> static constructor has already
+/// run has no effect on that type's cached metadata.
 /// </remarks>
 public static class StrictIdRegistry
 {
@@ -72,11 +67,8 @@ public static class StrictIdRegistry
 
 	/// <summary>
 	/// Registers a concrete <see cref="JsonConverter{T}"/> for the closed StrictId type
-	/// <typeparamref name="TId"/> — typically <see cref="Id{T}"/>, <see cref="IdNumber{T}"/>,
-	/// or <see cref="IdString{T}"/>. The StrictId typed-JSON factories look this up before
-	/// falling back to <see cref="Type.MakeGenericType(Type[])"/>, so a pre-registered
-	/// converter keeps hot-path serialisation AOT- and trim-safe. The generator emits one
-	/// of these calls per family for every <c>[IdPrefix]</c>-decorated type.
+	/// <typeparamref name="TId"/>. JSON converter factories look this up before falling
+	/// back to reflection, keeping serialisation AOT- and trim-safe.
 	/// </summary>
 	/// <typeparam name="TId">The closed StrictId type the converter serialises.</typeparam>
 	/// <param name="converter">The converter instance. Must not be <see langword="null"/>.</param>
