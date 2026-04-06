@@ -27,5 +27,9 @@ public sealed class Invoice;
 [IdString(MaxLength = 32, CharSet = IdStringCharSet.Alphanumeric)]
 public sealed class Customer;
 
+/// <summary>A product entity used to exercise the Guid family with a <c>prod</c> prefix.</summary>
+[IdPrefix("prod")]
+public sealed class Product;
+
 /// <summary>An entity with no prefix — StrictIds round-trip bare.</summary>
 public sealed class Anonymous;

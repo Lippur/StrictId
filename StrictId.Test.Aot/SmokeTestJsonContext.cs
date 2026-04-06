@@ -27,6 +27,9 @@ public sealed class StrictIdSmokeDto
 	/// <summary>Non-generic string id.</summary>
 	public IdString BareString { get; set; }
 
+	/// <summary>Closed-generic Guid id — exercises the Guid family.</summary>
+	public Guid<Product> ProductId { get; set; }
+
 	/// <summary>
 	/// A dictionary using a StrictId as its key. Exercises the
 	/// <c>WriteAsPropertyName</c> / <c>ReadAsPropertyName</c> code paths on the
@@ -55,6 +58,7 @@ public sealed class StrictIdSmokeDto
 [JsonSerializable(typeof(IdNumber<Invoice>))]
 [JsonSerializable(typeof(IdString<Customer>))]
 [JsonSerializable(typeof(Id<Order>))]
+[JsonSerializable(typeof(Guid<Product>))]
 [JsonSerializable(typeof(Id))]
 [JsonSerializable(typeof(IdNumber))]
 [JsonSerializable(typeof(IdString))]

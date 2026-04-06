@@ -7,7 +7,7 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed, phantom-typed integer StrictId for entities of type
+/// A strongly-typed integer StrictId for entities of type
 /// <typeparamref name="T"/>. Backed by a <see cref="ulong"/>. Values of different
 /// <typeparamref name="T"/>s cannot be assigned to or compared with each other, which
 /// prevents accidentally mixing up identifiers across entities at compile time.
@@ -133,7 +133,7 @@ public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>
 	/// </exception>
 	public long ToInt64 () => checked((long)Value);
 
-	/// <summary>Converts this typed <see cref="IdNumber{T}"/> into a non-generic <see cref="IdNumber"/>, erasing the phantom entity type.</summary>
+	/// <summary>Converts this typed <see cref="IdNumber{T}"/> into a non-generic <see cref="IdNumber"/>, erasing the entity type.</summary>
 	public IdNumber ToIdNumber () => new(Value);
 
 	/// <summary>Parses a string into an <see cref="IdNumber{T}"/>.</summary>
@@ -227,7 +227,7 @@ public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>
 
 	/// <summary>
 	/// Explicitly converts an <see cref="IdNumber{T}"/> to a non-generic <see cref="IdNumber"/>,
-	/// discarding the phantom entity type.
+	/// discarding the entity type.
 	/// </summary>
 	public static explicit operator IdNumber (IdNumber<T> value) => value.ToIdNumber();
 

@@ -15,14 +15,14 @@
 [IdPrefix("user")]
 public class Person {
     public Id<Person> Id { get; init; } = Id<Person>.NewId(); // user_01knfv9xv03499c7bf2brngecz
-    public Id<Dog> BestFriendId { get; set; }                 // Phantom-typed — mixing these up is a compiler error
+    public Id<Dog> BestFriendId { get; set; }                 // Strongly-typed — mixing these up is a compiler error
     public IdNumber<Invoice> LatestInvoice { get; set; }      // bigint-backed, optionally prefixed
     public IdString<StripeCustomer> StripeId { get; set; }    // Opaque string, charset/length configurable
     public List<Id> History { get; set; } = [];               // Non-generic form also included
 }
 ```
 
-- **Three ID families:** `Id<T>` (Ulid/Guid-backed), `IdNumber<T>` (integer-backed), `IdString<T>` (opaque-string-backed) — all phantom-typed so `Id<Person>` and `Id<Dog>` can never be compared, assigned, or passed interchangeably
+- **Three ID families:** `Id<T>` (Ulid/Guid-backed), `IdNumber<T>` (integer-backed), `IdString<T>` (opaque-string-backed) — all strongly-typed so `Id<Person>` and `Id<Dog>` can never be compared, assigned, or passed interchangeably
 - **Prefixed string form** via `[IdPrefix("user")]` — canonical output like `user_01knfv...`, multiple aliases accepted on parse, separator character configurable
 - **Built-in System.Text.Json** converters for every family
 - **EF Core** value converters for every family (via [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore)) — one line to wire up your `DbContext`

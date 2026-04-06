@@ -153,4 +153,70 @@ public class RouteBindingTests
 		var response = await app.CreateClient().GetAsync("/customers/a%20b");
 		response.StatusCode.Should().Be(HttpStatusCode.NotFound);
 	}
+
+	// ═════ Guid<T> family ═══════════════════════════════════════════════════
+
+	[Test]
+	public async Task GuidOfT_BindsFromPrefixedSegment ()
+	{
+		var expected = Guid<Product>.NewId();
+		await using var app = await TestHostBuilder.StartAsync(
+			configureServices: _ => { },
+			configurePipeline: a => a.MapGet("/products/{id}", (Guid<Product> id) => Results.Ok(id.ToString()))
+		);
+
+		var response = await app.CreateClient().GetAsync($"/products/{expected}");
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+		(await response.Content.ReadAsStringAsync()).Should().Contain(expected.ToString());
+	}
+
+	[Test]
+	public async Task GuidOfT_BindsFromBareSegment ()
+	{
+		var expected = Guid<Product>.NewId();
+		var bareForm = expected.ToString("D");
+		await using var app = await TestHostBuilder.StartAsync(
+			configurePipeline: a => a.MapGet("/products/{id}", (Guid<Product> id) => Results.Ok(id.ToString()))
+		);
+
+		var response = await app.CreateClient().GetAsync($"/products/{bareForm}");
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+	}
+
+	[Test]
+	public async Task GuidOfT_WrongPrefix_Returns400 ()
+	{
+		var wrongPrefix = $"order_{Guid.NewGuid():D}";
+		await using var app = await TestHostBuilder.StartAsync(
+			configurePipeline: a => a.MapGet("/products/{id}", (Guid<Product> id) => Results.Ok(id.ToString()))
+		);
+
+		var response = await app.CreateClient().GetAsync($"/products/{wrongPrefix}");
+		response.StatusCode.Should().Be(HttpStatusCode.BadRequest);
+	}
+
+	[Test]
+	public async Task RouteConstraint_StrictGuid_AcceptsValidGuid ()
+	{
+		var validGuid = Guid.NewGuid().ToString("D");
+		await using var app = await TestHostBuilder.StartAsync(
+			configureServices: s => s.AddStrictIdRouteConstraints(),
+			configurePipeline: a => a.MapGet("/products/{id:strictguid}", (string id) => Results.Ok(id))
+		);
+
+		var response = await app.CreateClient().GetAsync($"/products/{validGuid}");
+		response.StatusCode.Should().Be(HttpStatusCode.OK);
+	}
+
+	[Test]
+	public async Task RouteConstraint_StrictGuid_RejectsMalformed ()
+	{
+		await using var app = await TestHostBuilder.StartAsync(
+			configureServices: s => s.AddStrictIdRouteConstraints(),
+			configurePipeline: a => a.MapGet("/products/{id:strictguid}", (string id) => Results.Ok(id))
+		);
+
+		var response = await app.CreateClient().GetAsync("/products/not-a-guid");
+		response.StatusCode.Should().Be(HttpStatusCode.NotFound);
+	}
 }

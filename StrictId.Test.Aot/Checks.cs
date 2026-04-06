@@ -70,13 +70,36 @@ internal static class Checks
 		AssertEquals(original, parsed, "IdString<Customer> round-trip must preserve value.");
 	}
 
+	public static void GuidOfT_RoundTripsCanonicalForm ()
+	{
+		var original = Guid<Product>.NewId();
+		var text = original.ToString();
+		AssertEquals(true, text.StartsWith("prod_"), "Guid<Product>.ToString() canonical form must start with 'prod_'.");
+
+		var parsed = Guid<Product>.Parse(text);
+		AssertEquals(original, parsed, "Guid<Product> round-trip through canonical form must preserve value.");
+	}
+
+	public static void GuidOfT_FormatSpecifiers ()
+	{
+		var id = Guid<Product>.NewId();
+
+		var canonical = id.ToString("C");
+		var bareD = id.ToString("D");
+		var bareN = id.ToString("N");
+
+		AssertEquals(true, canonical.StartsWith("prod_"), "C specifier must produce prefixed form.");
+		AssertEquals(36, bareD.Length, "D specifier must produce a bare 36-char GUID.");
+		AssertEquals(32, bareN.Length, "N specifier must produce a bare 32-char GUID.");
+	}
+
 	public static void CrossTypeEquality_NeverHolds ()
 	{
 		var userId = new Id<User>(Ulid.MaxValue);
 		var orderId = new Id<Order>(Ulid.MaxValue);
 
 		// The two ids have identical underlying ULIDs but are different closed
-		// generic types — the phantom tag must prevent any equality relationship,
+		// generic types — the type tag must prevent any equality relationship,
 		// including boxed reference equality.
 		object boxedUser = userId;
 		object boxedOrder = orderId;
@@ -127,6 +150,7 @@ internal static class Checks
 			BareId = Id.NewId(),
 			BareNumber = new IdNumber(7UL),
 			BareString = new IdString("bare-value"),
+			ProductId = Guid<Product>.NewId(),
 			OrderNames =
 			{
 				[Id<Order>.NewId()] = "First order",
@@ -144,6 +168,7 @@ internal static class Checks
 		AssertEquals(original.BareId, roundTripped.BareId, "BareId changed across round-trip.");
 		AssertEquals(original.BareNumber, roundTripped.BareNumber, "BareNumber changed across round-trip.");
 		AssertEquals(original.BareString, roundTripped.BareString, "BareString changed across round-trip.");
+		AssertEquals(original.ProductId, roundTripped.ProductId, "ProductId changed across round-trip.");
 		AssertEquals(original.OrderNames.Count, roundTripped.OrderNames.Count, "OrderNames dictionary size changed.");
 
 		foreach (var (key, value) in original.OrderNames)

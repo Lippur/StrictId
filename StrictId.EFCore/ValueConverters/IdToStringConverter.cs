@@ -19,7 +19,7 @@ public class IdToStringConverter () : ValueConverter<Id, string>(
 /// prefix. In v3 the prefix is a C# type-system concept carried by <typeparamref name="T"/>;
 /// it never appears in the database.
 /// </summary>
-/// <typeparam name="T">The phantom entity type of the <see cref="Id{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="Id{T}"/>.</typeparam>
 public class IdToStringConverter<T> () : ValueConverter<Id<T>, string>(
 	id => id.ToString("B"),
 	value => new Id<T>(Ulid.Parse(value))

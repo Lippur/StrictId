@@ -415,6 +415,12 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		sb.Append(">>(new global::StrictId.Json.IdStringTypedJsonConverter<");
 		sb.Append(fullyQualifiedName);
 		sb.AppendLine(">());");
+
+		sb.Append("            global::StrictId.StrictIdRegistry.RegisterJsonConverter<global::StrictId.Guid<");
+		sb.Append(fullyQualifiedName);
+		sb.Append(">>(new global::StrictId.Json.GuidTypedJsonConverter<");
+		sb.Append(fullyQualifiedName);
+		sb.AppendLine(">());");
 	}
 
 	private static void EmitEfCoreRegistrations (StringBuilder sb, string fullyQualifiedName)
@@ -434,6 +440,12 @@ public sealed class StrictIdGenerator : IIncrementalGenerator
 		sb.Append("            global::StrictId.EFCore.StrictIdEfCoreRegistry.RegisterValueConverter<global::StrictId.IdString<");
 		sb.Append(fullyQualifiedName);
 		sb.Append(">>(new global::StrictId.EFCore.ValueConverters.IdStringToStringConverter<");
+		sb.Append(fullyQualifiedName);
+		sb.AppendLine(">());");
+
+		sb.Append("            global::StrictId.EFCore.StrictIdEfCoreRegistry.RegisterValueConverter<global::StrictId.Guid<");
+		sb.Append(fullyQualifiedName);
+		sb.Append(">>(new global::StrictId.EFCore.ValueConverters.GuidToGuidConverter<");
 		sb.Append(fullyQualifiedName);
 		sb.AppendLine(">());");
 	}

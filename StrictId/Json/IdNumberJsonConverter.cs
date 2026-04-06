@@ -67,7 +67,7 @@ public sealed class IdNumberJsonConverter : JsonConverter<IdNumber>
 /// into <see cref="StrictIdRegistry"/> so the <see cref="IdNumberTypedJsonConverterFactory"/>
 /// can resolve it without <see cref="Type.MakeGenericType(Type[])"/>.
 /// </summary>
-/// <typeparam name="T">The phantom entity type of the <see cref="IdNumber{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="IdNumber{T}"/>.</typeparam>
 public sealed class IdNumberTypedJsonConverter<T> : JsonConverter<IdNumber<T>>
 {
 	// Max prefix (63) + separator (1) + ulong digits (20) + slack = 88 bytes covers every canonical form.

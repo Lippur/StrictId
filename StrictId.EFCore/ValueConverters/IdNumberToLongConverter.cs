@@ -18,7 +18,7 @@ public class IdNumberToLongConverter () : ValueConverter<IdNumber, long>(
 /// integer (<c>bigint</c>). In v3 the prefix is a C# type-system concept carried by
 /// <typeparamref name="T"/>; only the bare decimal value is persisted.
 /// </summary>
-/// <typeparam name="T">The phantom entity type of the <see cref="IdNumber{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="IdNumber{T}"/>.</typeparam>
 public class IdNumberToLongConverter<T> () : ValueConverter<IdNumber<T>, long>(
 	id => checked((long)id.Value),
 	value => new IdNumber<T>((ulong)value)

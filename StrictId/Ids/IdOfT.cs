@@ -7,7 +7,7 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed, phantom-typed StrictId for entities of type <typeparamref name="T"/>.
+/// A strongly-typed StrictId for entities of type <typeparamref name="T"/>.
 /// Values of <see cref="Id{T}"/> cannot be assigned to or compared with identifiers of a
 /// different entity type, which prevents accidental mix-ups at compile time. Backed by a
 /// <see cref="Ulid"/>; convertible losslessly to and from <see cref="Guid"/>, ULID string,
@@ -111,7 +111,7 @@ public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 	/// <summary>Returns the underlying 16-byte representation.</summary>
 	public byte[] ToByteArray () => Value.ToByteArray();
 
-	/// <summary>Converts this typed <see cref="Id{T}"/> into a non-generic <see cref="Id"/>, erasing the phantom entity type.</summary>
+	/// <summary>Converts this typed <see cref="Id{T}"/> into a non-generic <see cref="Id"/>, erasing the entity type.</summary>
 	public Id ToId () => new(Value);
 
 	/// <summary>Parses a string into an <see cref="Id{T}"/>.</summary>
@@ -194,7 +194,7 @@ public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 
 	/// <summary>
 	/// Explicitly converts an <see cref="Id{T}"/> to a non-generic <see cref="Id"/>,
-	/// discarding the phantom entity type.
+	/// discarding the entity type.
 	/// </summary>
 	public static explicit operator Id (Id<T> value) => value.ToId();
 

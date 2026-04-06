@@ -15,7 +15,7 @@ namespace StrictId;
 /// <remarks>
 /// For type-safe identifiers that cannot be accidentally mixed across entities, prefer
 /// <see cref="Id{T}"/>. Conversion from <see cref="Id{T}"/> to <see cref="Id"/>
-/// requires an explicit cast because it discards the phantom entity type; conversion
+/// requires an explicit cast because it discards the entity type; conversion
 /// in the reverse direction is implicit because no type information is lost.
 /// </remarks>
 [DebuggerDisplay("{ToString(),nq}"), JsonConverter(typeof(IdJsonConverter))]

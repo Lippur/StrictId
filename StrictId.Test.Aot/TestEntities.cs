@@ -28,3 +28,7 @@ public sealed class Customer;
 /// <summary>Invoice entity used to exercise the numeric family with a prefix.</summary>
 [IdPrefix("inv")]
 public sealed class Invoice;
+
+/// <summary>Product entity used to exercise the Guid family with a prefix.</summary>
+[IdPrefix("prod")]
+public sealed class Product;

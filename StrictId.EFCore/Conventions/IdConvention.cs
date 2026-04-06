@@ -59,6 +59,11 @@ public class IdConvention : IPropertyAddedConvention
 			var chain = propertyBuilder.HasConversion(converter)?.HasMaxLength(maxLength);
 			if (asciiOnly) chain?.IsUnicode(false);
 		}
+		else if (definition == typeof(Guid<>))
+		{
+			var converter = ResolveConverter(clrType, typeof(GuidToGuidConverter<>), typeArgument);
+			propertyBuilder.HasConversion(converter);
+		}
 	}
 
 	/// <summary>

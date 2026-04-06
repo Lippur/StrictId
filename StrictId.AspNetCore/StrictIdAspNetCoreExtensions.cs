@@ -73,9 +73,9 @@ public static class StrictIdAspNetCoreExtensions
 	}
 
 	/// <summary>
-	/// Registers the three StrictId route constraints — <c>id</c>, <c>idnumber</c>, and
-	/// <c>idstring</c> — in <c>RouteOptions.ConstraintMap</c> so route templates can
-	/// pre-filter URL segments before dispatch.
+	/// Registers StrictId route constraints — <c>id</c>, <c>idnumber</c>,
+	/// <c>idstring</c>, and <c>strictguid</c> — in <c>RouteOptions.ConstraintMap</c>
+	/// so route templates can pre-filter URL segments before dispatch.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
 	/// <returns>The same <paramref name="services"/> for chaining.</returns>
@@ -87,6 +87,7 @@ public static class StrictIdAspNetCoreExtensions
 			options.ConstraintMap["id"] = typeof(IdRouteConstraint);
 			options.ConstraintMap["idnumber"] = typeof(IdNumberRouteConstraint);
 			options.ConstraintMap["idstring"] = typeof(IdStringRouteConstraint);
+			options.ConstraintMap["strictguid"] = typeof(GuidRouteConstraint);
 		});
 		return services;
 	}
@@ -140,7 +141,7 @@ public static class StrictIdAspNetCoreExtensions
 	/// StrictId source generator.
 	/// </summary>
 	/// <param name="services">The service collection to configure.</param>
-	/// <typeparam name="TEntity">The phantom entity tag for which to register converters.</typeparam>
+	/// <typeparam name="TEntity">The entity type for which to register converters.</typeparam>
 	/// <returns>The same <paramref name="services"/> for chaining.</returns>
 	public static IServiceCollection AddStrictIdTypeConverter<TEntity> (this IServiceCollection services)
 	{
@@ -148,6 +149,7 @@ public static class StrictIdAspNetCoreExtensions
 		TypeDescriptor.AddAttributes(typeof(Id<TEntity>), new TypeConverterAttribute(typeof(IdTypeConverter<TEntity>)));
 		TypeDescriptor.AddAttributes(typeof(IdNumber<TEntity>), new TypeConverterAttribute(typeof(IdNumberTypeConverter<TEntity>)));
 		TypeDescriptor.AddAttributes(typeof(IdString<TEntity>), new TypeConverterAttribute(typeof(IdStringTypeConverter<TEntity>)));
+		TypeDescriptor.AddAttributes(typeof(Guid<TEntity>), new TypeConverterAttribute(typeof(GuidTypeConverter<TEntity>)));
 		return services;
 	}
 
@@ -195,19 +197,22 @@ public static class StrictIdAspNetCoreExtensions
 	/// registers each as the <see cref="TypeConverterAttribute"/> for the matching
 	/// closed StrictId generic.
 	/// </summary>
-	[RequiresDynamicCode("Uses Type.MakeGenericType to close IdTypeConverter<T>, IdNumberTypeConverter<T>, and IdStringTypeConverter<T>.")]
+	[RequiresDynamicCode("Uses Type.MakeGenericType to close StrictId TypeConverters over registered entity types.")]
 	private static void RegisterClosedGenericTypeConverters (Type entityType)
 	{
 		var idClosed = typeof(Id<>).MakeGenericType(entityType);
 		var idNumberClosed = typeof(IdNumber<>).MakeGenericType(entityType);
 		var idStringClosed = typeof(IdString<>).MakeGenericType(entityType);
+		var guidClosed = typeof(Guid<>).MakeGenericType(entityType);
 
 		var idConverterClosed = typeof(IdTypeConverter<>).MakeGenericType(entityType);
 		var idNumberConverterClosed = typeof(IdNumberTypeConverter<>).MakeGenericType(entityType);
 		var idStringConverterClosed = typeof(IdStringTypeConverter<>).MakeGenericType(entityType);
+		var guidConverterClosed = typeof(GuidTypeConverter<>).MakeGenericType(entityType);
 
 		TypeDescriptor.AddAttributes(idClosed, new TypeConverterAttribute(idConverterClosed));
 		TypeDescriptor.AddAttributes(idNumberClosed, new TypeConverterAttribute(idNumberConverterClosed));
 		TypeDescriptor.AddAttributes(idStringClosed, new TypeConverterAttribute(idStringConverterClosed));
+		TypeDescriptor.AddAttributes(guidClosed, new TypeConverterAttribute(guidConverterClosed));
 	}
 }

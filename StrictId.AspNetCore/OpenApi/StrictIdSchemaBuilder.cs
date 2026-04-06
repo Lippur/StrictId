@@ -73,13 +73,14 @@ internal static class StrictIdSchemaBuilder
 		if (openDefinition == typeof(Id<>)) return BuildForUlid(entityType);
 		if (openDefinition == typeof(IdNumber<>)) return BuildForNumber(entityType);
 		if (openDefinition == typeof(IdString<>)) return BuildForString(entityType);
+		if (openDefinition == typeof(Guid<>)) return BuildForGuid(entityType);
 
 		return null;
 	}
 
 	/// <summary>
 	/// Builds the schema fields for <see cref="Id{T}"/> where <paramref name="entityType"/>
-	/// is the closed phantom tag, or for the non-generic <see cref="Id"/> when
+	/// is the closed type tag, or for the non-generic <see cref="Id"/> when
 	/// <paramref name="entityType"/> is <see langword="null"/>.
 	/// </summary>
 	public static SchemaFields BuildForUlid (Type? entityType)
@@ -141,6 +142,30 @@ internal static class StrictIdSchemaBuilder
 			prefix,
 			$"an opaque string suffix (max {options.MaxLength} chars, charset {options.CharSet})",
 			family: "IdString");
+
+		return new SchemaFields { Pattern = pattern, Example = example, Description = description };
+	}
+
+	// Guid "D" format is 8-4-4-4-12 hex digits with hyphens, case-insensitive.
+	private const string GuidSuffixPattern = "[0-9A-Fa-f]{8}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{4}-[0-9A-Fa-f]{12}";
+
+	/// <summary>
+	/// Builds the schema fields for <see cref="Guid{T}"/> where
+	/// <paramref name="entityType"/> is the closed entity type.
+	/// </summary>
+	public static SchemaFields BuildForGuid (Type? entityType)
+	{
+		var prefix = entityType is null
+			? PrefixInfo.None
+			: StrictIdMetadataResolver.ResolvePrefix(entityType);
+
+		var pattern = BuildPattern(prefix, GuidSuffixPattern);
+		var example = BuildExample(prefix, Guid.NewGuid().ToString("D"));
+		var description = BuildDescription(
+			entityType,
+			prefix,
+			"a standard 36-character hyphenated GUID",
+			family: "Guid");
 
 		return new SchemaFields { Pattern = pattern, Example = example, Description = description };
 	}

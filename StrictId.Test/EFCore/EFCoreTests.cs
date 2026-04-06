@@ -40,6 +40,13 @@ public class EFCoreTests
 		public IdString<UnicodeTag> Id { get; set; }
 	}
 
+	[IdPrefix("prod")]
+	private class Product
+	{
+		public Guid<Product> Id { get; set; }
+		public string Title { get; set; } = string.Empty;
+	}
+
 	/// <summary>
 	/// Entity used to exercise the non-generic StrictId families. A plain integer
 	/// primary key keeps the schema orthogonal to the family under test so that
@@ -58,6 +65,7 @@ public class EFCoreTests
 		public DbSet<User> Users => Set<User>();
 		public DbSet<Order> Orders => Set<Order>();
 		public DbSet<StripeCustomer> StripeCustomers => Set<StripeCustomer>();
+		public DbSet<Product> Products => Set<Product>();
 		public DbSet<Event> Events => Set<Event>();
 		public DbSet<UnicodeTag> UnicodeTags => Set<UnicodeTag>();
 
@@ -71,6 +79,7 @@ public class EFCoreTests
 			modelBuilder.Entity<User>().HasKey(u => u.Id);
 			modelBuilder.Entity<Order>().HasKey(o => o.Id);
 			modelBuilder.Entity<StripeCustomer>().HasKey(c => c.Id);
+			modelBuilder.Entity<Product>().HasKey(p => p.Id);
 			modelBuilder.Entity<Event>().HasKey(e => e.EventId);
 			modelBuilder.Entity<UnicodeTag>().HasKey(t => t.Id);
 		}
@@ -277,6 +286,52 @@ public class EFCoreTests
 		var entityType = _db.Model.FindEntityType(typeof(User))!;
 		var property = entityType.FindProperty(nameof(User.Id))!;
 		property.GetMaxLength().Should().Be(26);
+	}
+
+	// ═════ Guid<T> (Guid family) ════════════════════════════════════════════
+
+	[Test]
+	public void GuidOfT_RoundTripsThroughSqlite ()
+	{
+		var product = new Product { Id = Guid<Product>.NewId(), Title = "Widget" };
+		_db.Products.Add(product);
+		_db.SaveChanges();
+
+		_db.ChangeTracker.Clear();
+
+		var fetched = _db.Products.Single(p => p.Id == product.Id);
+
+		fetched.Id.Should().Be(product.Id);
+		fetched.Title.Should().Be("Widget");
+	}
+
+	[Test]
+	public void GuidOfT_StoresNativeGuidWithoutPrefix ()
+	{
+		var guid = Guid.NewGuid();
+		_db.Products.Add(new Product { Id = new Guid<Product>(guid), Title = "Gadget" });
+		_db.SaveChanges();
+
+		// SQLite stores Guid as a blob/text. Read the raw value and verify no prefix.
+		var stored = ReadScalarString("SELECT Id FROM Products LIMIT 1");
+
+		stored.Should().NotStartWith("prod_");
+		// SQLite stores the Guid in uppercase hyphenated format.
+		stored.Should().ContainEquivalentOf(guid.ToString("D"));
+	}
+
+	[Test]
+	public void GuidOfT_LinqFilterWorks ()
+	{
+		var target = Guid<Product>.NewId();
+		_db.Products.Add(new Product { Id = target, Title = "Target" });
+		_db.Products.Add(new Product { Id = Guid<Product>.NewId(), Title = "Other" });
+		_db.SaveChanges();
+
+		_db.ChangeTracker.Clear();
+
+		var hit = _db.Products.Single(p => p.Id == target);
+		hit.Title.Should().Be("Target");
 	}
 
 	// ═════ Non-generic families ══════════════════════════════════════════════

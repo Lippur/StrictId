@@ -18,7 +18,7 @@ public class IdToGuidConverter () : ValueConverter<Id, Guid>(
 /// EF Core value converter that stores <see cref="Id{T}"/> as a <see cref="Guid"/>.
 /// See <see cref="IdToGuidConverter"/> for caveats.
 /// </summary>
-/// <typeparam name="T">The phantom entity type of the <see cref="Id{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="Id{T}"/>.</typeparam>
 public class IdTypedToGuidConverter<T> () : ValueConverter<Id<T>, Guid>(
 	id => id.Value.ToGuid(),
 	value => new Id<T>(value)

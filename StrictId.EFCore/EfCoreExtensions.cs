@@ -8,9 +8,9 @@ using StrictId.EFCore.ValueGenerators;
 namespace StrictId.EFCore;
 
 /// <summary>
-/// Entity Framework Core integration helpers for the three StrictId families
+/// Entity Framework Core integration helpers for the StrictId families
 /// (<see cref="Id"/>/<see cref="Id{T}"/>, <see cref="IdNumber"/>/<see cref="IdNumber{T}"/>,
-/// and <see cref="IdString"/>/<see cref="IdString{T}"/>).
+/// <see cref="IdString"/>/<see cref="IdString{T}"/>, and <see cref="Guid{T}"/>).
 /// </summary>
 public static class EfCoreExtensions
 {
@@ -75,6 +75,19 @@ public static class EfCoreExtensions
 		builder
 			.HasValueGenerator<IdTypedValueGenerator<T>>()
 			.HasValueGeneratorFactory<IdTypedValueGeneratorFactory<T>>();
+
+		return builder;
+	}
+
+	/// <summary>
+	/// Configures a strongly-typed <see cref="Guid{T}"/> property to be populated by
+	/// <see cref="GuidTypedValueGenerator{T}"/> on add, generating a new UUIDv7 Guid.
+	/// </summary>
+	public static PropertyBuilder<Guid<T>> HasGuidValueGenerator<T> (this PropertyBuilder<Guid<T>> builder)
+	{
+		builder
+			.HasValueGenerator<GuidTypedValueGenerator<T>>()
+			.HasValueGeneratorFactory<GuidTypedValueGeneratorFactory<T>>();
 
 		return builder;
 	}

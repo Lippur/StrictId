@@ -66,7 +66,7 @@ public sealed class IdJsonConverter : JsonConverter<Id>
 /// <see cref="Type.MakeGenericType(Type[])"/>. Users who hand-register a converter
 /// can also construct it explicitly: <c>new IdTypedJsonConverter&lt;User&gt;()</c>.
 /// </remarks>
-/// <typeparam name="T">The phantom entity type of the <see cref="Id{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="Id{T}"/>.</typeparam>
 public sealed class IdTypedJsonConverter<T> : JsonConverter<Id<T>>
 {
 	// Max prefix (63) + separator (1) + ULID (26) + slack = 96 bytes covers every canonical form.

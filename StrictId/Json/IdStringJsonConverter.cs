@@ -91,7 +91,7 @@ public sealed class IdStringJsonConverter : JsonConverter<IdString>
 /// A default <see cref="IdString{T}"/> serializes as an empty JSON string and
 /// round-trips back to <see langword="default"/>.
 /// </remarks>
-/// <typeparam name="T">The phantom entity type of the <see cref="IdString{T}"/>.</typeparam>
+/// <typeparam name="T">The entity type of the <see cref="IdString{T}"/>.</typeparam>
 public sealed class IdStringTypedJsonConverter<T> : JsonConverter<IdString<T>>
 {
 	// Max prefix (63) + separator (1) + default suffix (255) + slack = 320 bytes covers

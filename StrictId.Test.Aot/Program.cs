@@ -18,6 +18,8 @@ Run("Id<T>          round-trip",                      Checks.IdOfT_RoundTripsCan
 Run("Id<T>          format specifiers",               Checks.IdOfT_FormatSpecifiers);
 Run("IdNumber<T>    round-trip",                      Checks.IdNumberOfT_RoundTripsCanonicalForm);
 Run("IdString<T>    round-trip",                      Checks.IdStringOfT_RoundTripsCanonicalForm);
+Run("Guid<T>        round-trip",                      Checks.GuidOfT_RoundTripsCanonicalForm);
+Run("Guid<T>        format specifiers",               Checks.GuidOfT_FormatSpecifiers);
 Run("Id<T>          cross-type equality",             Checks.CrossTypeEquality_NeverHolds);
 Run("Id<T>          generation burst",                Checks.IdOfT_NewIdBurst_IsUniqueAndTimeOrdered);
 Run("JSON           source-gen DTO round-trip",       Checks.StrictIdDto_JsonRoundTrip_UsesSourceGeneratedContext);

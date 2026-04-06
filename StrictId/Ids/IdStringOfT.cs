@@ -7,7 +7,7 @@ using StrictId.Json;
 namespace StrictId;
 
 /// <summary>
-/// A strongly-typed, phantom-typed string StrictId for entities of type
+/// A strongly-typed string StrictId for entities of type
 /// <typeparamref name="T"/>. Wraps an opaque string intended for third-party IDs
 /// (Stripe <c>cus_...</c>, Twilio <c>SM...</c>), legacy IDs, slugs, or SKUs. Values
 /// of different <typeparamref name="T"/>s cannot be assigned to or compared with
@@ -124,7 +124,7 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 
 	/// <summary>
 	/// Converts this typed <see cref="IdString{T}"/> into a non-generic <see cref="IdString"/>,
-	/// erasing the phantom entity type. The underlying string is copied verbatim — because the
+	/// erasing the entity type. The underlying string is copied verbatim — because the
 	/// typed form has already validated and normalised it, the non-generic form is constructed
 	/// via the internal <c>init</c> accessor rather than routed through the non-generic
 	/// validating constructor. This guarantees that erasing the type is infallible, even when
@@ -206,7 +206,7 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 
 	/// <summary>
 	/// Explicitly converts an <see cref="IdString{T}"/> to a non-generic <see cref="IdString"/>,
-	/// discarding the phantom entity type.
+	/// discarding the entity type.
 	/// </summary>
 	public static explicit operator IdString (IdString<T> value) => value.ToIdString();
 

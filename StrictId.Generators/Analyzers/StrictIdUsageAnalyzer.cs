@@ -21,11 +21,12 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 {
 	private const string Category = "StrictId";
 
-	// Metadata names for the three StrictId open generics and the IdString attribute.
+	// Metadata names for the four StrictId open generics and the IdString attribute.
 	// Metadata format for generics uses a backtick-arity suffix.
 	private const string IdOpenGenericMetadataName = "StrictId.Id`1";
 	private const string IdNumberOpenGenericMetadataName = "StrictId.IdNumber`1";
 	private const string IdStringOpenGenericMetadataName = "StrictId.IdString`1";
+	private const string GuidOpenGenericMetadataName = "StrictId.Guid`1";
 	private const string IdStringAttributeMetadataName = "StrictId.IdStringAttribute";
 
 	/// <summary>STRID001 — comparing <c>.Value</c> across two different closed StrictId generic types.</summary>
@@ -36,7 +37,7 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
-		description: "StrictId's phantom-type safety prevents direct comparison of Id<A> with Id<B>. Comparing their .Value properties bypasses that safety.");
+		description: "StrictId's strong type safety prevents direct comparison of Id<A> with Id<B>. Comparing their .Value properties bypasses that safety.");
 
 	/// <summary>STRID002 — assigning <c>default(Id&lt;T&gt;)</c> to an <c>Id</c> property, likely a mistake.</summary>
 	public static readonly DiagnosticDescriptor DefaultIdAssignment = new(
@@ -62,11 +63,11 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 	public static readonly DiagnosticDescriptor OpenGenericIdParameter = new(
 		id: "STRID006",
 		title: "StrictId closed with a generic type parameter",
-		messageFormat: "'{0}<{1}>' is parameterised by the type parameter '{1}'. Phantom-type safety requires a concrete entity type, not an open type parameter.",
+		messageFormat: "'{0}<{1}>' is parameterised by the type parameter '{1}'. Strong type safety requires a concrete entity type, not an open type parameter.",
 		category: Category,
 		defaultSeverity: DiagnosticSeverity.Warning,
 		isEnabledByDefault: true,
-		description: "StrictId's phantom-type tag must refer to a specific entity type so the compiler can prevent cross-entity mix-ups. A generic type parameter defeats that guarantee.");
+		description: "StrictId's type tag must refer to a specific entity type so the compiler can prevent cross-entity mix-ups. A generic type parameter defeats that guarantee.");
 
 	/// <inheritdoc />
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
@@ -84,6 +85,7 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 			var idType = compilation.GetTypeByMetadataName(IdOpenGenericMetadataName);
 			var idNumberType = compilation.GetTypeByMetadataName(IdNumberOpenGenericMetadataName);
 			var idStringType = compilation.GetTypeByMetadataName(IdStringOpenGenericMetadataName);
+			var guidType = compilation.GetTypeByMetadataName(GuidOpenGenericMetadataName);
 			var idStringAttrType = compilation.GetTypeByMetadataName(IdStringAttributeMetadataName);
 
 			// If StrictId isn't referenced at all the symbols won't resolve and there
@@ -91,7 +93,7 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 			// harmless in projects that happen to have it on the analyzer list.
 			if (idType is null || idNumberType is null || idStringType is null) return;
 
-			var cache = new StrictIdSymbolCache(idType, idNumberType, idStringType, idStringAttrType);
+			var cache = new StrictIdSymbolCache(idType, idNumberType, idStringType, guidType, idStringAttrType);
 
 			compilationContext.RegisterOperationAction(
 				ctx => AnalyzeBinaryOperation(ctx, cache),
@@ -168,12 +170,12 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		if (value is not IDefaultValueOperation) return;
 
 		// The target must be a property reference named "Id" whose type is a closed
-		// Id<T> — the plan's narrow heuristic. IdNumber and IdString don't have NewId().
+		// Id<T> or Guid<T>. IdNumber and IdString don't have NewId().
 		if (assignment.Target is not IPropertyReferenceOperation propRef) return;
 		if (propRef.Property.Name != "Id") return;
 
 		var propType = propRef.Property.Type as INamedTypeSymbol;
-		if (propType is null || !cache.IsIdGeneric(propType)) return;
+		if (propType is null || (!cache.IsIdGeneric(propType) && !cache.IsGuidGeneric(propType))) return;
 
 		// Only fire inside an object initializer or a constructor body — this keeps
 		// the heuristic narrow enough to avoid flagging legitimate `id = default`
@@ -211,7 +213,7 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		// of the three StrictId generic names. This keeps the analyzer cheap; the
 		// semantic resolve only runs on plausible candidates.
 		var identifier = genericName.Identifier.ValueText;
-		if (identifier is not ("Id" or "IdNumber" or "IdString")) return;
+		if (identifier is not ("Id" or "IdNumber" or "IdString" or "Guid")) return;
 
 		var symbolInfo = context.SemanticModel.GetSymbolInfo(genericName, context.CancellationToken);
 		var symbol = symbolInfo.Symbol ?? symbolInfo.CandidateSymbols.FirstOrDefault();
@@ -247,9 +249,13 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 			return; // IdString<T> is correct when T has [IdString]
 		if (!HasIdStringAttribute(typeArgument, cache.IdStringAttribute)) return;
 
-		var familyName = SymbolEqualityComparer.Default.Equals(closedGeneric.OriginalDefinition, cache.Id)
-			? "Id"
-			: "IdNumber";
+		string familyName;
+		if (SymbolEqualityComparer.Default.Equals(closedGeneric.OriginalDefinition, cache.Id))
+			familyName = "Id";
+		else if (SymbolEqualityComparer.Default.Equals(closedGeneric.OriginalDefinition, cache.IdNumber))
+			familyName = "IdNumber";
+		else
+			familyName = "Guid";
 
 		context.ReportDiagnostic(Diagnostic.Create(
 			WrongIdFamily,
@@ -294,11 +300,13 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		INamedTypeSymbol id,
 		INamedTypeSymbol idNumber,
 		INamedTypeSymbol idString,
+		INamedTypeSymbol? guid,
 		INamedTypeSymbol? idStringAttribute)
 	{
 		public INamedTypeSymbol Id { get; } = id;
 		public INamedTypeSymbol IdNumber { get; } = idNumber;
 		public INamedTypeSymbol IdString { get; } = idString;
+		public INamedTypeSymbol? Guid { get; } = guid;
 		public INamedTypeSymbol? IdStringAttribute { get; } = idStringAttribute;
 
 		public bool IsStrictIdGeneric (INamedTypeSymbol type)
@@ -306,10 +314,14 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 			var def = type.OriginalDefinition;
 			return SymbolEqualityComparer.Default.Equals(def, Id)
 				|| SymbolEqualityComparer.Default.Equals(def, IdNumber)
-				|| SymbolEqualityComparer.Default.Equals(def, IdString);
+				|| SymbolEqualityComparer.Default.Equals(def, IdString)
+				|| (Guid is not null && SymbolEqualityComparer.Default.Equals(def, Guid));
 		}
 
 		public bool IsIdGeneric (INamedTypeSymbol type)
 			=> SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, Id);
+
+		public bool IsGuidGeneric (INamedTypeSymbol type)
+			=> Guid is not null && SymbolEqualityComparer.Default.Equals(type.OriginalDefinition, Guid);
 	}
 }
