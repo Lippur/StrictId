@@ -17,10 +17,10 @@ Comes with System.Text.Json converters, EF Core value converters/generators, ASP
 [IdPrefix("user")]
 public class User
 {
-    public Id<User> Id { get; init; } = Id<User>.NewId();         // user_01knfv9xv03499c7bf2brngecz
-    public Guid<Tenant> TenantId { get; set; }                     // Guid<T>, strongly-typed Guid
-    public IdNumber<Invoice> LatestInvoice { get; set; }           // inv_42, bigint-backed
-    public IdString<ExternalAccount> ExternalId { get; set; }       // ext_abcDEF123, opaque string
+    public Id<User> Id { get; init; } = Id<User>.NewId();     // user_01knfv9xv03499c7bf2brngecz
+    public Guid<Tenant> TenantId { get; set; }                // Guid<T>, strongly-typed Guid
+    public IdNumber<Invoice> LatestInvoice { get; set; }      // inv_42, bigint-backed
+    public IdString<ExternalAccount> ExternalId { get; set; } // ext_abcDEF123, opaque string
 }
 ```
 
@@ -83,15 +83,15 @@ The default choice. Backed by a [ULID](https://github.com/ulid/spec): 128 bits, 
 
 ```csharp
 // Create
-var id = Id<User>.NewId();                                        // New ULID
-var id = Id<User>.NewId(DateTimeOffset.UtcNow);                   // With specific timestamp
-var id = new Id<User>(someUlid);                                  // Wrap an existing Ulid
-var id = new Id<User>(someGuid);                                  // Wrap a Guid (converted to ULID)
+var id = Id<User>.NewId();                       // New ULID
+var id = Id<User>.NewId(DateTimeOffset.UtcNow);  // With specific timestamp
+var id = new Id<User>(someUlid);                 // Wrap an existing Ulid
+var id = new Id<User>(someGuid);                 // Wrap a Guid (converted to ULID)
 
 // Implicit conversions into Id<T>
 Id<User> id = Ulid.NewUlid();
 Id<User> id = Guid.NewGuid();
-Id<User> id = Id.NewId();                                         // From non-generic Id
+Id<User> id = Id.NewId(); 
 
 // Parse: accepts prefixed, bare ULID, or GUID string
 var id = Id<User>.Parse("user_01knfv9xv03499c7bf2brngecz");
@@ -126,10 +126,10 @@ Wraps `System.Guid` with a type parameter. The API mirrors `System.Guid` (same m
 
 ```csharp
 // Create: same methods you already know
-var id = Guid<User>.NewGuid();                                    // V4 (random), same as Guid.NewGuid()
-var id = Guid<User>.NewId();                                      // V7 (time-sortable)
-var id = Guid<User>.CreateVersion7();                              // Same as NewId(), mirrors Guid.CreateVersion7()
-var id = Guid<User>.CreateVersion7(DateTimeOffset.UtcNow);         // V7 with specific timestamp
+var id = Guid<User>.NewGuid();                              // V4 (random), same as Guid.NewGuid()
+var id = Guid<User>.NewId();                                // V7 (time-sortable)
+var id = Guid<User>.CreateVersion7();                       // Same as NewId(), mirrors Guid.CreateVersion7()
+var id = Guid<User>.CreateVersion7(DateTimeOffset.UtcNow);  // V7 with specific timestamp
 
 // Implicit from Guid
 Guid<User> id = Guid.NewGuid();
@@ -169,9 +169,9 @@ For database-assigned auto-increment IDs, counters, or any integer-keyed entity.
 [IdPrefix("inv")]
 public class Invoice;
 
-var id = new IdNumber<Invoice>(42);                                // From any integer type
-var id = IdNumber<Invoice>.Parse("inv_42");                        // Prefixed
-var id = IdNumber<Invoice>.Parse("42");                            // Bare
+var id = new IdNumber<Invoice>(42);         // From any integer type
+var id = IdNumber<Invoice>.Parse("inv_42"); // Prefixed
+var id = IdNumber<Invoice>.Parse("42");     // Bare
 
 id.ToUInt64();   // 42UL
 id.ToInt64();    // 42L (throws OverflowException if > long.MaxValue)
@@ -218,16 +218,16 @@ Decorate entity types to give their IDs a human-readable prefix:
 
 ```csharp
 [IdPrefix("user")]
-public class User;                                    // user_01knfv9xv03499c7bf2brngecz
+public class User; // user_01knfv9xv03499c7bf2brngecz
 
 [IdPrefix("order", IsDefault = true)]
 [IdPrefix("ord")]
 [IdPrefix("o")]
-public class Order;                                   // Outputs "order_...", also parses "ord_..." and "o_..."
+public class Order; // Outputs "order_...", also parses "ord_..." and "o_..."
 
 [IdPrefix("tenant")]
 [IdSeparator(IdSeparator.Colon)]
-public class Tenant;                                  // tenant:01knfv9xv03499c7bf2brngecz
+public class Tenant; // tenant:01knfv9xv03499c7bf2brngecz
 ```
 
 - Prefixes must match `^[a-z][a-z0-9_]{0,62}$`
@@ -253,9 +253,9 @@ var dogId = Id<Dog>.NewId();
 
 if (personId == dogId) { }  // Compiler error
 
-Feed(personId);             // Compiler error, persons aren't dogs
+Feed(personId);             // Compiler error, type mismatch
 
-// But method overloads work beautifully:
+// Type argument based method overloads make your code cleaner:
 void Feed(Id<Dog> id) => GetDog(id).FeedLeftovers();
 void Feed(Id<Person> id) => GetPerson(id).FeedMichelinStarMeal();
 
