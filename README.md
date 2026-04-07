@@ -28,11 +28,11 @@ It's just generic structs and attributes. Decorate your entities with `[IdPrefix
 
 ## Why StrictId
 
-- **Type safety without boilerplate.** Libraries like [StronglyTypedId](https://github.com/andrewlock/StronglyTypedId) and [Vogen](https://github.com/SteveDunn/Vogen) require declaring a partial type per entity and rely on source generation to create the ID struct for you. StrictId uses closed generics instead, so `Id<User>` works immediately.
-- **Simple, obvious API.** Things just work when you need them to, with sane defaults and quality-of-life features, plus analysers to catch any mistakes. 
+- **Zero boilerplate.** `Id<User>` just works, without partial classes or source generation. Opt in to advanced features like ID prefixes gradually, without breaking anything.
+- **Simple, obvious API.** Everything is set up with sane defaults and quality-of-life features, plus analysers to catch any mistakes early. 
 - **Ulid, but more.** If you already use the [Ulid](https://github.com/Cysharp/Ulid) library, StrictId wraps it with type safety, prefixed string forms, JSON converters, and EF Core/ASP.NET integration on top.
 - **Covers every backing type.** Whether you use Guid, Ulid, slugs, numbers, or all four at the same time, StrictId works seamlessly and consistently. 
-- **Drop-in Guid replacement.** `Guid<T>` mirrors the `System.Guid` API, so switching is mostly find-and-replace. Existing database columns work without migration.
+- **Drop-in Guid replacement.** `Guid<T>` mirrors the `System.Guid` API, so you can adopt it without breaking anything. Existing database columns work without migration.
 - **Robust and reliable.** The core is just a simple generic struct, and 550+ unit and integration tests make sure the rest works fine too.
 
 ## Get started
