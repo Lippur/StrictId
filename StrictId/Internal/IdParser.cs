@@ -18,18 +18,27 @@ internal static class IdParser
 	/// on any failure; use <see cref="BuildParseException"/> to obtain a verbose
 	/// diagnostic message.
 	/// </summary>
-	public static bool TryParseUlid (ReadOnlySpan<char> input, PrefixInfo prefix, out Ulid value)
+	/// <param name="input">The character span to parse.</param>
+	/// <param name="prefix">The resolved prefix metadata for the target type.</param>
+	/// <param name="requirePrefix">
+	/// When <see langword="true"/>, bare (unprefixed) values are rejected even if
+	/// structurally valid. Passed via <see cref="IdFormat.RequirePrefix"/>.
+	/// </param>
+	/// <param name="value">The parsed ULID, or <see langword="default"/> on failure.</param>
+	public static bool TryParseUlid (ReadOnlySpan<char> input, PrefixInfo prefix, out Ulid value, bool requirePrefix = false)
 	{
 		value = default;
 		if (input.IsEmpty) return false;
+		var enforcePrefix = requirePrefix && prefix.HasPrefix;
 
 		// Case 1: bare ULID (exactly 26 chars).
 		if (input.Length == 26)
-			return Ulid.TryParse(input, out value);
+			return !enforcePrefix && Ulid.TryParse(input, out value);
 
 		// Case 2: bare GUID (exactly 36 chars, hyphenated "D" form).
 		if (input.Length == 36)
 		{
+			if (enforcePrefix) return false;
 			if (Guid.TryParse(input, out var guid))
 			{
 				value = new Ulid(guid);
@@ -93,23 +102,31 @@ internal static class IdParser
 	public static FormatException BuildParseException (
 		string input,
 		PrefixInfo prefix,
-		string typeName
+		string typeName,
+		bool requirePrefix = false
 	)
 	{
-		var reason = DiagnoseFailure(input.AsSpan(), prefix);
-		var message = BuildMessage(input, prefix, typeName, reason);
+		var reason = DiagnoseFailure(input.AsSpan(), prefix, requirePrefix);
+		var message = BuildMessage(input, prefix, typeName, requirePrefix, reason);
 		return new FormatException(message);
 	}
 
-	private static string BuildMessage (string input, PrefixInfo prefix, string typeName, string reason)
+	private static string BuildMessage (string input, PrefixInfo prefix, string typeName, bool requirePrefix, string reason)
 	{
 		var sb = new StringBuilder(256);
 		sb.Append("Could not parse '").Append(input).Append("' as ").Append(typeName).Append('.');
 
 		sb.Append("\n  Expected shape: ");
-		sb.Append(prefix.HasPrefix
-			? "[prefix][separator]<26-char ULID or 36-char GUID>, or a bare 26-char ULID / 36-char GUID."
-			: "26-char ULID (Crockford base32) or 36-char GUID.");
+		if (requirePrefix && prefix.HasPrefix)
+		{
+			sb.Append("[prefix][separator]<26-char ULID or 36-char GUID>. Bare values are rejected (IdFormat.RequirePrefix).");
+		}
+		else
+		{
+			sb.Append(prefix.HasPrefix
+				? "[prefix][separator]<26-char ULID or 36-char GUID>, or a bare 26-char ULID / 36-char GUID."
+				: "26-char ULID (Crockford base32) or 36-char GUID.");
+		}
 
 		if (prefix.HasPrefix)
 		{
@@ -128,12 +145,14 @@ internal static class IdParser
 		return sb.ToString();
 	}
 
-	private static string DiagnoseFailure (ReadOnlySpan<char> input, PrefixInfo prefix)
+	private static string DiagnoseFailure (ReadOnlySpan<char> input, PrefixInfo prefix, bool requirePrefix = false)
 	{
 		if (input.IsEmpty) return "input is empty.";
 
 		if (input.Length == 26)
 		{
+			if (requirePrefix && prefix.HasPrefix && Ulid.TryParse(input, out _))
+				return "input is a valid bare ULID but a prefix is required.";
 			for (var i = 0; i < input.Length; i++)
 			{
 				if (!IsCrockfordChar(input[i]))
@@ -143,7 +162,11 @@ internal static class IdParser
 		}
 
 		if (input.Length == 36)
+		{
+			if (requirePrefix && prefix.HasPrefix && Guid.TryParse(input, out _))
+				return "input is a valid bare GUID but a prefix is required.";
 			return "input is 36 characters but is not a valid GUID.";
+		}
 
 		if (input.Length > 26)
 		{

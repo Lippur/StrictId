@@ -128,15 +128,22 @@ public readonly record struct IdNumber (ulong Value) : IStrictId<IdNumber>, ICom
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static IdNumber Parse (string s, IFormatProvider? provider) => Parse(s);
+	public static IdNumber Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s.AsSpan(), PrefixInfo.None, out var value, strict))
+			return new IdNumber(value);
+		throw IdNumberParser.BuildParseException(s, PrefixInfo.None, nameof(IdNumber), strict);
+	}
 
 	/// <summary>Parses a bare decimal span into an <see cref="IdNumber"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid bare decimal.</exception>
 	public static IdNumber Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdNumberParser.TryParseUInt64(s, PrefixInfo.None, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s, PrefixInfo.None, out var value, strict))
 			return new IdNumber(value);
-		throw IdNumberParser.BuildParseException(s.ToString(), PrefixInfo.None, nameof(IdNumber));
+		throw IdNumberParser.BuildParseException(s.ToString(), PrefixInfo.None, nameof(IdNumber), strict);
 	}
 
 	/// <summary>Attempts to parse a bare decimal string into an <see cref="IdNumber"/>.</summary>
@@ -152,12 +159,23 @@ public readonly record struct IdNumber (ulong Value) : IStrictId<IdNumber>, ICom
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out IdNumber)" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out IdNumber result) => TryParse(s, out result);
+	public static bool TryParse (string? s, IFormatProvider? provider, out IdNumber result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdNumberParser.TryParseUInt64(s.AsSpan(), PrefixInfo.None, out var value, strict))
+		{
+			result = new IdNumber(value);
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a bare decimal span into an <see cref="IdNumber"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out IdNumber result)
 	{
-		if (IdNumberParser.TryParseUInt64(s, PrefixInfo.None, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s, PrefixInfo.None, out var value, strict))
 		{
 			result = new IdNumber(value);
 			return true;

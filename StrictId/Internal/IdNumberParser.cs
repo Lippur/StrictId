@@ -17,7 +17,14 @@ internal static class IdNumberParser
 	/// <see langword="false"/> on any failure; use <see cref="BuildParseException"/>
 	/// to obtain a verbose diagnostic message.
 	/// </summary>
-	public static bool TryParseUInt64 (ReadOnlySpan<char> input, PrefixInfo prefix, out ulong value)
+	/// <param name="input">The character span to parse.</param>
+	/// <param name="prefix">The resolved prefix metadata for the target type.</param>
+	/// <param name="requirePrefix">
+	/// When <see langword="true"/>, bare (unprefixed) values are rejected even if
+	/// structurally valid. Passed via <see cref="IdFormat.RequirePrefix"/>.
+	/// </param>
+	/// <param name="value">The parsed value, or <c>0</c> on failure.</param>
+	public static bool TryParseUInt64 (ReadOnlySpan<char> input, PrefixInfo prefix, out ulong value, bool requirePrefix = false)
 	{
 		value = 0;
 		if (input.IsEmpty) return false;
@@ -31,7 +38,7 @@ internal static class IdNumberParser
 
 		// Case 1: entire input is decimal digits (bare numeric form).
 		if (digitStart == 0)
-			return ulong.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out value);
+			return !(requirePrefix && prefix.HasPrefix) && ulong.TryParse(digits, NumberStyles.None, CultureInfo.InvariantCulture, out value);
 
 		// Case 2: prefixed form. The char immediately before the digits must be a
 		// recognised IdSeparator, and the text before that must be a registered prefix.
@@ -51,22 +58,29 @@ internal static class IdNumberParser
 	/// prefix list, the declared separator, and a best-effort diagnosis of the
 	/// specific failure.
 	/// </summary>
-	public static FormatException BuildParseException (string input, PrefixInfo prefix, string typeName)
+	public static FormatException BuildParseException (string input, PrefixInfo prefix, string typeName, bool requirePrefix = false)
 	{
-		var reason = DiagnoseFailure(input.AsSpan(), prefix);
-		var message = BuildMessage(input, prefix, typeName, reason);
+		var reason = DiagnoseFailure(input.AsSpan(), prefix, requirePrefix);
+		var message = BuildMessage(input, prefix, typeName, requirePrefix, reason);
 		return new FormatException(message);
 	}
 
-	private static string BuildMessage (string input, PrefixInfo prefix, string typeName, string reason)
+	private static string BuildMessage (string input, PrefixInfo prefix, string typeName, bool requirePrefix, string reason)
 	{
 		var sb = new StringBuilder(256);
 		sb.Append("Could not parse '").Append(input).Append("' as ").Append(typeName).Append('.');
 
 		sb.Append("\n  Expected shape: ");
-		sb.Append(prefix.HasPrefix
-			? "[prefix][separator]<decimal digits>, or bare decimal digits."
-			: "decimal digits (non-negative, up to ulong.MaxValue = 18446744073709551615).");
+		if (requirePrefix && prefix.HasPrefix)
+		{
+			sb.Append("[prefix][separator]<decimal digits>. Bare values are rejected (IdFormat.RequirePrefix).");
+		}
+		else
+		{
+			sb.Append(prefix.HasPrefix
+				? "[prefix][separator]<decimal digits>, or bare decimal digits."
+				: "decimal digits (non-negative, up to ulong.MaxValue = 18446744073709551615).");
+		}
 
 		if (prefix.HasPrefix)
 		{
@@ -85,7 +99,7 @@ internal static class IdNumberParser
 		return sb.ToString();
 	}
 
-	private static string DiagnoseFailure (ReadOnlySpan<char> input, PrefixInfo prefix)
+	private static string DiagnoseFailure (ReadOnlySpan<char> input, PrefixInfo prefix, bool requirePrefix = false)
 	{
 		if (input.IsEmpty) return "input is empty.";
 
@@ -98,6 +112,8 @@ internal static class IdNumberParser
 
 		if (digitStart == 0)
 		{
+			if (requirePrefix && prefix.HasPrefix)
+				return "input is bare decimal digits but a prefix is required.";
 			// Entire input is digits but TryParse still failed — must be overflow.
 			return $"digit sequence '{digits.ToString()}' is out of range for ulong (maximum 18446744073709551615).";
 		}

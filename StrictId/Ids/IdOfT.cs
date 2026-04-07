@@ -126,15 +126,27 @@ public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static Id<T> Parse (string s, IFormatProvider? provider) => Parse(s);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// Pass <see langword="null"/> (or omit) for the default lenient behaviour.
+	/// </param>
+	public static Id<T> Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+			return new Id<T>(value);
+		throw IdParser.BuildParseException(s, StrictIdMetadata<T>.Prefix, $"{nameof(Id)}<{typeof(T).Name}>", strict);
+	}
 
 	/// <summary>Parses a character span into an <see cref="Id{T}"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid <see cref="Id{T}"/>.</exception>
 	public static Id<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdParser.TryParseUlid(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 			return new Id<T>(value);
-		throw IdParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"{nameof(Id)}<{typeof(T).Name}>");
+		throw IdParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"{nameof(Id)}<{typeof(T).Name}>", strict);
 	}
 
 	/// <summary>Attempts to parse a string into an <see cref="Id{T}"/>.</summary>
@@ -150,12 +162,28 @@ public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out Id{T})" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out Id<T> result) => TryParse(s, out result);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// </param>
+	/// <param name="result">The parsed result, or <see langword="default"/> on failure.</param>
+	public static bool TryParse (string? s, IFormatProvider? provider, out Id<T> result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdParser.TryParseUlid(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+		{
+			result = new Id<T>(value);
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a character span into an <see cref="Id{T}"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out Id<T> result)
 	{
-		if (IdParser.TryParseUlid(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 		{
 			result = new Id<T>(value);
 			return true;
@@ -181,9 +209,7 @@ public readonly record struct Id<T> (Ulid Value) : IStrictId<Id<T>>, IComparable
 	public static implicit operator Id<T> (Guid value) => new(value);
 
 	/// <summary>
-	/// Implicitly converts a non-generic <see cref="Id"/> to an <see cref="Id{T}"/>. The
-	/// non-generic form carries no entity type, so this conversion does not lose any
-	/// information — the caller is simply ascribing a type.
+	/// Converts a non-generic <see cref="Id"/> to an <see cref="Id{T}"/>. 
 	/// </summary>
 	public static implicit operator Id<T> (Id value) => new(value);
 

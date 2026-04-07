@@ -130,6 +130,64 @@ public class IdNumberOfTTests
 		act.Should().Throw<FormatException>();
 	}
 
+	// ═════ IdFormat.RequirePrefix ════════════════════════════════════════════
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsPrefixed ()
+	{
+		var id = IdNumber<Invoice>.Parse("invoice_42", IdFormat.RequirePrefix);
+		id.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsAlias ()
+	{
+		var id = IdNumber<Account>.Parse("acct_99", IdFormat.RequirePrefix);
+		id.Value.Should().Be(99UL);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_RejectsBareDigits ()
+	{
+		var act = () => IdNumber<Invoice>.Parse("42", IdFormat.RequirePrefix);
+		act.Should().Throw<FormatException>()
+			.WithMessage("*bare decimal digits*prefix is required*");
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsFalseForBare ()
+	{
+		IdNumber<Invoice>.TryParse("42", IdFormat.RequirePrefix, out _).Should().BeFalse();
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsTrueForPrefixed ()
+	{
+		IdNumber<Invoice>.TryParse("invoice_42", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		var id = IdNumber<NoPrefix>.Parse("42", IdFormat.RequirePrefix);
+		id.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		IdNumber<NoPrefix>.TryParse("42", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(42UL);
+	}
+
+	[Test]
+	public void Parse_NullProvider_SameAsLenient ()
+	{
+		var id = IdNumber<Invoice>.Parse("42", null);
+		id.Value.Should().Be(42UL);
+	}
+
 	// ═════ Round-trip ════════════════════════════════════════════════════════
 
 	[Test]

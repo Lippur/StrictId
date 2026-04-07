@@ -108,15 +108,22 @@ public readonly record struct IdString : IStrictId<IdString>, IComparable
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static IdString Parse (string s, IFormatProvider? provider) => Parse(s);
+	public static IdString Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s.AsSpan(), PrefixInfo.None, IdStringOptions.Default, out var value, strict))
+			return new IdString { Value = value! };
+		throw IdStringParser.BuildParseException(s, PrefixInfo.None, IdStringOptions.Default, nameof(IdString), strict);
+	}
 
 	/// <summary>Parses a character span into an <see cref="IdString"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid <see cref="IdString"/>.</exception>
 	public static IdString Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdStringParser.TryParseString(s, PrefixInfo.None, IdStringOptions.Default, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s, PrefixInfo.None, IdStringOptions.Default, out var value, strict))
 			return new IdString { Value = value! };
-		throw IdStringParser.BuildParseException(s.ToString(), PrefixInfo.None, IdStringOptions.Default, nameof(IdString));
+		throw IdStringParser.BuildParseException(s.ToString(), PrefixInfo.None, IdStringOptions.Default, nameof(IdString), strict);
 	}
 
 	/// <summary>Attempts to parse a string into an <see cref="IdString"/>.</summary>
@@ -132,12 +139,23 @@ public readonly record struct IdString : IStrictId<IdString>, IComparable
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out IdString)" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out IdString result) => TryParse(s, out result);
+	public static bool TryParse (string? s, IFormatProvider? provider, out IdString result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdStringParser.TryParseString(s.AsSpan(), PrefixInfo.None, IdStringOptions.Default, out var value, strict))
+		{
+			result = new IdString { Value = value! };
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a character span into an <see cref="IdString"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out IdString result)
 	{
-		if (IdStringParser.TryParseString(s, PrefixInfo.None, IdStringOptions.Default, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s, PrefixInfo.None, IdStringOptions.Default, out var value, strict))
 		{
 			result = new IdString { Value = value! };
 			return true;

@@ -110,15 +110,22 @@ public readonly record struct Id (Ulid Value) : IStrictId<Id>, IComparable
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static Id Parse (string s, IFormatProvider? provider) => Parse(s);
+	public static Id Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s.AsSpan(), PrefixInfo.None, out var value, strict))
+			return new Id(value);
+		throw IdParser.BuildParseException(s, PrefixInfo.None, nameof(Id), strict);
+	}
 
 	/// <summary>Parses a bare ULID or GUID span into an <see cref="Id"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid bare ULID or GUID.</exception>
 	public static Id Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdParser.TryParseUlid(s, PrefixInfo.None, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s, PrefixInfo.None, out var value, strict))
 			return new Id(value);
-		throw IdParser.BuildParseException(s.ToString(), PrefixInfo.None, nameof(Id));
+		throw IdParser.BuildParseException(s.ToString(), PrefixInfo.None, nameof(Id), strict);
 	}
 
 	/// <summary>Attempts to parse a bare ULID or GUID string into an <see cref="Id"/>.</summary>
@@ -134,12 +141,23 @@ public readonly record struct Id (Ulid Value) : IStrictId<Id>, IComparable
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out Id)" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out Id result) => TryParse(s, out result);
+	public static bool TryParse (string? s, IFormatProvider? provider, out Id result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdParser.TryParseUlid(s.AsSpan(), PrefixInfo.None, out var value, strict))
+		{
+			result = new Id(value);
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a bare ULID or GUID span into an <see cref="Id"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out Id result)
 	{
-		if (IdParser.TryParseUlid(s, PrefixInfo.None, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdParser.TryParseUlid(s, PrefixInfo.None, out var value, strict))
 		{
 			result = new Id(value);
 			return true;

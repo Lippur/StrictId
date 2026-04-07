@@ -246,6 +246,64 @@ public class GuidOfTTests
 		Guid<User>.IsValid("nope").Should().BeFalse();
 	}
 
+	// ═════ IdFormat.RequirePrefix ════════════════════════════════════════════
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsPrefixed ()
+	{
+		var id = Guid<User>.Parse($"user_{SampleGuid:D}", IdFormat.RequirePrefix);
+		id.Value.Should().Be(SampleGuid);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsAlias ()
+	{
+		var id = Guid<Order>.Parse($"ord_{SampleGuid:D}", IdFormat.RequirePrefix);
+		id.Value.Should().Be(SampleGuid);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_RejectsBareGuid ()
+	{
+		var act = () => Guid<User>.Parse(SampleGuid.ToString("D"), IdFormat.RequirePrefix);
+		act.Should().Throw<FormatException>()
+			.WithMessage("*bare GUID*prefix is required*");
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsFalseForBare ()
+	{
+		Guid<User>.TryParse(SampleGuid.ToString("D"), IdFormat.RequirePrefix, out _).Should().BeFalse();
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsTrueForPrefixed ()
+	{
+		Guid<User>.TryParse($"user_{SampleGuid:D}", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(SampleGuid);
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		var id = Guid<NoPrefix>.Parse(SampleGuid.ToString("D"), IdFormat.RequirePrefix);
+		id.Value.Should().Be(SampleGuid);
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		Guid<NoPrefix>.TryParse(SampleGuid.ToString("D"), IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(SampleGuid);
+	}
+
+	[Test]
+	public void Parse_NullProvider_SameAsLenient ()
+	{
+		var id = Guid<User>.Parse(SampleGuid.ToString("D"), null);
+		id.Value.Should().Be(SampleGuid);
+	}
+
 	// ═════ Round-trip ════════════════════════════════════════════════════════
 
 	[Test]

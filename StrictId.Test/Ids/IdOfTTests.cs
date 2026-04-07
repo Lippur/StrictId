@@ -213,6 +213,95 @@ public class IdOfTTests
 		Id<User>.TryParse("xyz", out _).Should().BeFalse();
 	}
 
+	// ═════ IdFormat.RequirePrefix ════════════════════════════════════════════
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsPrefixedUlid ()
+	{
+		var id = Id<User>.Parse($"user_{SampleUlidLower}", IdFormat.RequirePrefix);
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsPrefixedGuid ()
+	{
+		var id = Id<User>.Parse($"user_{SampleGuidLower}", IdFormat.RequirePrefix);
+		id.ToGuid().Should().Be(Guid.Parse(SampleGuidLower));
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsAlias ()
+	{
+		var id = Id<Order>.Parse($"ord_{SampleUlidLower}", IdFormat.RequirePrefix);
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_RejectsBareUlid ()
+	{
+		var act = () => Id<User>.Parse(SampleUlidLower, IdFormat.RequirePrefix);
+		act.Should().Throw<FormatException>()
+			.WithMessage("*bare ULID*prefix is required*");
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_RejectsBareGuid ()
+	{
+		var act = () => Id<User>.Parse(SampleGuidLower, IdFormat.RequirePrefix);
+		act.Should().Throw<FormatException>()
+			.WithMessage("*bare GUID*prefix is required*");
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsFalseForBareUlid ()
+	{
+		Id<User>.TryParse(SampleUlidLower, IdFormat.RequirePrefix, out _).Should().BeFalse();
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsTrueForPrefixed ()
+	{
+		Id<User>.TryParse($"user_{SampleUlidLower}", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		// No prefix is registered, so there is nothing to enforce — bare is the correct form.
+		var id = Id<NoPrefix>.Parse(SampleUlidLower, IdFormat.RequirePrefix);
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		Id<NoPrefix>.TryParse(SampleUlidLower, IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_SpanOverload_AcceptsPrefixed ()
+	{
+		var input = $"user_{SampleUlidLower}".AsSpan();
+		var id = Id<User>.Parse(input, IdFormat.RequirePrefix);
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_SpanOverload_RejectsBare ()
+	{
+		Id<User>.TryParse(SampleUlidLower.AsSpan(), IdFormat.RequirePrefix, out _).Should().BeFalse();
+	}
+
+	[Test]
+	public void Parse_NullProvider_SameAsLenient ()
+	{
+		// Passing null should behave identically to the no-provider overload.
+		var id = Id<User>.Parse(SampleUlidLower, null);
+		id.Value.Should().Be(Ulid.Parse(SampleUlidUpper));
+	}
+
 	// ═════ Round-trip ════════════════════════════════════════════════════════
 
 	[Test]

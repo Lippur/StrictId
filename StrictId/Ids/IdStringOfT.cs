@@ -127,15 +127,27 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static IdString<T> Parse (string s, IFormatProvider? provider) => Parse(s);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// Pass <see langword="null"/> (or omit) for the default lenient behaviour.
+	/// </param>
+	public static IdString<T> Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s.AsSpan(), StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value, strict))
+			return new IdString<T> { Value = value! };
+		throw IdStringParser.BuildParseException(s, StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, $"{nameof(IdString)}<{typeof(T).Name}>", strict);
+	}
 
 	/// <summary>Parses a character span into an <see cref="IdString{T}"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid <see cref="IdString{T}"/>.</exception>
 	public static IdString<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdStringParser.TryParseString(s, StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s, StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value, strict))
 			return new IdString<T> { Value = value! };
-		throw IdStringParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, $"{nameof(IdString)}<{typeof(T).Name}>");
+		throw IdStringParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, $"{nameof(IdString)}<{typeof(T).Name}>", strict);
 	}
 
 	/// <summary>Attempts to parse a string into an <see cref="IdString{T}"/>.</summary>
@@ -151,12 +163,28 @@ public readonly record struct IdString<T> : IStrictId<IdString<T>>, IComparable
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out IdString{T})" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out IdString<T> result) => TryParse(s, out result);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// </param>
+	/// <param name="result">The parsed result, or <see langword="default"/> on failure.</param>
+	public static bool TryParse (string? s, IFormatProvider? provider, out IdString<T> result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdStringParser.TryParseString(s.AsSpan(), StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value, strict))
+		{
+			result = new IdString<T> { Value = value! };
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a character span into an <see cref="IdString{T}"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out IdString<T> result)
 	{
-		if (IdStringParser.TryParseString(s, StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdStringParser.TryParseString(s, StrictIdMetadata<T>.Prefix, IdStringMetadata<T>.Options, out var value, strict))
 		{
 			result = new IdString<T> { Value = value! };
 			return true;

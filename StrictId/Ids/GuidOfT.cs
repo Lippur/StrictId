@@ -97,15 +97,27 @@ public readonly record struct Guid<T> (Guid Value) : IStrictId<Guid<T>>, ICompar
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static Guid<T> Parse (string s, IFormatProvider? provider) => Parse(s);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// Pass <see langword="null"/> (or omit) for the default lenient behaviour.
+	/// </param>
+	public static Guid<T> Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (GuidParser.TryParseGuid(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+			return new Guid<T>(value);
+		throw GuidParser.BuildParseException(s, StrictIdMetadata<T>.Prefix, $"Guid<{typeof(T).Name}>", strict);
+	}
 
 	/// <summary>Parses a character span into a <see cref="Guid{T}"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid <see cref="Guid{T}"/>.</exception>
 	public static Guid<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (GuidParser.TryParseGuid(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (GuidParser.TryParseGuid(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 			return new Guid<T>(value);
-		throw GuidParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"Guid<{typeof(T).Name}>");
+		throw GuidParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"Guid<{typeof(T).Name}>", strict);
 	}
 
 	/// <summary>Attempts to parse a string into a <see cref="Guid{T}"/>.</summary>
@@ -121,12 +133,28 @@ public readonly record struct Guid<T> (Guid Value) : IStrictId<Guid<T>>, ICompar
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out Guid{T})" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out Guid<T> result) => TryParse(s, out result);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// </param>
+	/// <param name="result">The parsed result, or <see langword="default"/> on failure.</param>
+	public static bool TryParse (string? s, IFormatProvider? provider, out Guid<T> result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && GuidParser.TryParseGuid(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+		{
+			result = new Guid<T>(value);
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a character span into a <see cref="Guid{T}"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out Guid<T> result)
 	{
-		if (GuidParser.TryParseGuid(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (GuidParser.TryParseGuid(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 		{
 			result = new Guid<T>(value);
 			return true;

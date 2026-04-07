@@ -211,6 +211,64 @@ public class IdStringOfTTests
 		id.Value.Should().Be("X12");
 	}
 
+	// ═════ IdFormat.RequirePrefix ════════════════════════════════════════════
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsPrefixed ()
+	{
+		var id = IdString<Customer>.Parse("cus_abc123", IdFormat.RequirePrefix);
+		id.Value.Should().Be("abc123");
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_AcceptsAlias ()
+	{
+		var id = IdString<Reference>.Parse("r_X12", IdFormat.RequirePrefix);
+		id.Value.Should().Be("X12");
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_RejectsBareSuffix ()
+	{
+		var act = () => IdString<Customer>.Parse("abc123", IdFormat.RequirePrefix);
+		act.Should().Throw<FormatException>()
+			.WithMessage("*bare suffix*prefix is required*");
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsFalseForBare ()
+	{
+		IdString<Customer>.TryParse("abc123", IdFormat.RequirePrefix, out _).Should().BeFalse();
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_ReturnsTrueForPrefixed ()
+	{
+		IdString<Customer>.TryParse("cus_abc123", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be("abc123");
+	}
+
+	[Test]
+	public void Parse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		var id = IdString<NoPrefix>.Parse("abc123", IdFormat.RequirePrefix);
+		id.Value.Should().Be("abc123");
+	}
+
+	[Test]
+	public void TryParse_RequirePrefix_NoPrefixRegistered_AcceptsBare ()
+	{
+		IdString<NoPrefix>.TryParse("abc123", IdFormat.RequirePrefix, out var id).Should().BeTrue();
+		id.Value.Should().Be("abc123");
+	}
+
+	[Test]
+	public void Parse_NullProvider_SameAsLenient ()
+	{
+		var id = IdString<Customer>.Parse("abc123", null);
+		id.Value.Should().Be("abc123");
+	}
+
 	// ═════ Round-trip ════════════════════════════════════════════════════════
 
 	[Test]

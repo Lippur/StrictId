@@ -147,15 +147,27 @@ public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>
 	}
 
 	/// <inheritdoc cref="Parse(string)" />
-	public static IdNumber<T> Parse (string s, IFormatProvider? provider) => Parse(s);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// Pass <see langword="null"/> (or omit) for the default lenient behaviour.
+	/// </param>
+	public static IdNumber<T> Parse (string s, IFormatProvider? provider)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+			return new IdNumber<T>(value);
+		throw IdNumberParser.BuildParseException(s, StrictIdMetadata<T>.Prefix, $"{nameof(IdNumber)}<{typeof(T).Name}>", strict);
+	}
 
 	/// <summary>Parses a character span into an <see cref="IdNumber{T}"/>.</summary>
 	/// <exception cref="FormatException">The span is not a valid <see cref="IdNumber{T}"/>.</exception>
 	public static IdNumber<T> Parse (ReadOnlySpan<char> s, IFormatProvider? provider)
 	{
-		if (IdNumberParser.TryParseUInt64(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 			return new IdNumber<T>(value);
-		throw IdNumberParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"{nameof(IdNumber)}<{typeof(T).Name}>");
+		throw IdNumberParser.BuildParseException(s.ToString(), StrictIdMetadata<T>.Prefix, $"{nameof(IdNumber)}<{typeof(T).Name}>", strict);
 	}
 
 	/// <summary>Attempts to parse a string into an <see cref="IdNumber{T}"/>.</summary>
@@ -171,12 +183,28 @@ public readonly record struct IdNumber<T> (ulong Value) : IStrictId<IdNumber<T>>
 	}
 
 	/// <inheritdoc cref="TryParse(string?, out IdNumber{T})" />
-	public static bool TryParse (string? s, IFormatProvider? provider, out IdNumber<T> result) => TryParse(s, out result);
+	/// <param name="s">The string to parse.</param>
+	/// <param name="provider">
+	/// Pass <see cref="IdFormat.RequirePrefix"/> to reject bare (unprefixed) values.
+	/// </param>
+	/// <param name="result">The parsed result, or <see langword="default"/> on failure.</param>
+	public static bool TryParse (string? s, IFormatProvider? provider, out IdNumber<T> result)
+	{
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (s is not null && IdNumberParser.TryParseUInt64(s.AsSpan(), StrictIdMetadata<T>.Prefix, out var value, strict))
+		{
+			result = new IdNumber<T>(value);
+			return true;
+		}
+		result = default;
+		return false;
+	}
 
 	/// <summary>Attempts to parse a character span into an <see cref="IdNumber{T}"/>.</summary>
 	public static bool TryParse (ReadOnlySpan<char> s, IFormatProvider? provider, out IdNumber<T> result)
 	{
-		if (IdNumberParser.TryParseUInt64(s, StrictIdMetadata<T>.Prefix, out var value))
+		var strict = IdFormat.IsPrefixRequired(provider);
+		if (IdNumberParser.TryParseUInt64(s, StrictIdMetadata<T>.Prefix, out var value, strict))
 		{
 			result = new IdNumber<T>(value);
 			return true;

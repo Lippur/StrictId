@@ -19,11 +19,20 @@ internal static class IdStringParser
 	/// on any failure; use <see cref="BuildParseException"/> to obtain a verbose
 	/// diagnostic message.
 	/// </summary>
+	/// <param name="input">The character span to parse.</param>
+	/// <param name="prefix">The resolved prefix metadata for the target type.</param>
+	/// <param name="options">Validation and normalization rules for the suffix.</param>
+	/// <param name="requirePrefix">
+	/// When <see langword="true"/>, bare (unprefixed) values are rejected even if
+	/// structurally valid. Passed via <see cref="IdFormat.RequirePrefix"/>.
+	/// </param>
+	/// <param name="value">The parsed and normalized suffix, or <see langword="null"/> on failure.</param>
 	public static bool TryParseString (
 		ReadOnlySpan<char> input,
 		PrefixInfo prefix,
 		IdStringOptions options,
-		out string? value
+		out string? value,
+		bool requirePrefix = false
 	)
 	{
 		value = null;
@@ -43,6 +52,8 @@ internal static class IdStringParser
 		ReadOnlySpan<char> suffix;
 		if (bestPrefixLen >= 0)
 			suffix = input[(bestPrefixLen + 1)..];
+		else if (requirePrefix && prefix.HasPrefix)
+			return false;
 		else
 			suffix = input;
 
@@ -63,11 +74,12 @@ internal static class IdStringParser
 		string input,
 		PrefixInfo prefix,
 		IdStringOptions options,
-		string typeName
+		string typeName,
+		bool requirePrefix = false
 	)
 	{
-		var reason = DiagnoseFailure(input.AsSpan(), prefix, options);
-		var message = BuildMessage(input, prefix, options, typeName, reason);
+		var reason = DiagnoseFailure(input.AsSpan(), prefix, options, requirePrefix);
+		var message = BuildMessage(input, prefix, options, typeName, requirePrefix, reason);
 		return new FormatException(message);
 	}
 
@@ -76,6 +88,7 @@ internal static class IdStringParser
 		PrefixInfo prefix,
 		IdStringOptions options,
 		string typeName,
+		bool requirePrefix,
 		string reason
 	)
 	{
@@ -83,9 +96,16 @@ internal static class IdStringParser
 		sb.Append("Could not parse '").Append(input).Append("' as ").Append(typeName).Append('.');
 
 		sb.Append("\n  Expected shape: ");
-		sb.Append(prefix.HasPrefix
-			? "[prefix][separator]<suffix>, or a bare suffix."
-			: "an opaque string suffix.");
+		if (requirePrefix && prefix.HasPrefix)
+		{
+			sb.Append("[prefix][separator]<suffix>. Bare values are rejected (IdFormat.RequirePrefix).");
+		}
+		else
+		{
+			sb.Append(prefix.HasPrefix
+				? "[prefix][separator]<suffix>, or a bare suffix."
+				: "an opaque string suffix.");
+		}
 
 		sb.Append("\n  Suffix rules: max length ").Append(options.MaxLength)
 			.Append(", charset ").Append(options.CharSet)
@@ -112,7 +132,8 @@ internal static class IdStringParser
 	private static string DiagnoseFailure (
 		ReadOnlySpan<char> input,
 		PrefixInfo prefix,
-		IdStringOptions options
+		IdStringOptions options,
+		bool requirePrefix = false
 	)
 	{
 		if (input.IsEmpty) return "input is empty.";
@@ -131,6 +152,8 @@ internal static class IdStringParser
 		ReadOnlySpan<char> suffix;
 		if (bestPrefixLen >= 0)
 			suffix = input[(bestPrefixLen + 1)..];
+		else if (requirePrefix && prefix.HasPrefix && IdStringValidator.IsValid(input, options))
+			return "input is a valid bare suffix but a prefix is required.";
 		else
 			suffix = input;
 
