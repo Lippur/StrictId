@@ -6,9 +6,8 @@ namespace StrictId.Generators.Test.Analyzers;
 /// <summary>
 /// Snapshot-style tests for the Phase 9 usage analyzer. Covers STRID001 (cross-type
 /// <c>.Value</c> comparison), STRID002 (<c>default(Id&lt;T&gt;)</c> assigned to an
-/// <c>Id</c> property), STRID005 (wrong StrictId family given the entity's
-/// attribute configuration), and STRID006 (closing a StrictId generic with a generic
-/// type parameter).
+/// <c>Id</c> property), and STRID005 (wrong StrictId family given the entity's
+/// attribute configuration).
 /// </summary>
 [TestFixture]
 public class StrictIdUsageAnalyzerTests
@@ -285,66 +284,4 @@ public class StrictIdUsageAnalyzerTests
 		result.Diagnostics.Should().NotContain(d => d.Id == "STRID005");
 	}
 
-	// ═════ STRID006 — generic type parameter used as StrictId type arg ═══════
-
-	[Test]
-	public async Task IdOpenOverGenericParameter_ReportsSTRID006 ()
-	{
-		var result = await AnalyzerRunner.RunAsync(Analyzer, """
-			using StrictId;
-			namespace MyApp;
-			public class Repository<T>
-			{
-				public Id<T>? LastId { get; set; }
-			}
-			""");
-
-		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID006");
-	}
-
-	[Test]
-	public async Task IdNumberOpenOverGenericParameter_ReportsSTRID006 ()
-	{
-		var result = await AnalyzerRunner.RunAsync(Analyzer, """
-			using StrictId;
-			namespace MyApp;
-			public class Repository<T>
-			{
-				public IdNumber<T>? LastId { get; set; }
-			}
-			""");
-
-		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID006");
-	}
-
-	[Test]
-	public async Task IdStringOpenOverGenericParameter_ReportsSTRID006 ()
-	{
-		var result = await AnalyzerRunner.RunAsync(Analyzer, """
-			using StrictId;
-			namespace MyApp;
-			public class Repository<T>
-			{
-				public IdString<T>? LastId { get; set; }
-			}
-			""");
-
-		result.Diagnostics.Should().ContainSingle(d => d.Id == "STRID006");
-	}
-
-	[Test]
-	public async Task ClosedGenericNotOverTypeParameter_NoDiagnostic ()
-	{
-		var result = await AnalyzerRunner.RunAsync(Analyzer, """
-			using StrictId;
-			namespace MyApp;
-			public class User { }
-			public class Repository
-			{
-				public Id<User>? LastId { get; set; }
-			}
-			""");
-
-		result.Diagnostics.Should().NotContain(d => d.Id == "STRID006");
-	}
 }

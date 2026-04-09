@@ -9,12 +9,11 @@ namespace StrictId.Generators.Analyzers;
 
 /// <summary>
 /// Roslyn analyzer that reports usage-pattern mistakes involving StrictId types.
-/// Groups four rules that all hinge on recognising closed <c>Id&lt;T&gt;</c>,
+/// Groups three rules that all hinge on recognising closed <c>Id&lt;T&gt;</c>,
 /// <c>IdNumber&lt;T&gt;</c>, and <c>IdString&lt;T&gt;</c> types: STRID001 cross-type
 /// <c>.Value</c> comparison, STRID002 <c>default(Id&lt;T&gt;)</c> where
-/// <c>NewId()</c> is likely intended, STRID005 mixing an entity's declared attribute
-/// family with the wrong StrictId wrapper, and STRID006 closing a StrictId generic
-/// with a generic type parameter.
+/// <c>NewId()</c> is likely intended, and STRID005 mixing an entity's declared
+/// attribute family with the wrong StrictId wrapper.
 /// </summary>
 [DiagnosticAnalyzer(LanguageNames.CSharp)]
 public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
@@ -59,19 +58,9 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		isEnabledByDefault: true,
 		description: "An entity decorated with [IdString] should be used with IdString<T>. Mixing families causes the [IdString] configuration to be silently ignored.");
 
-	/// <summary>STRID006 — closing a StrictId generic with a generic type parameter.</summary>
-	public static readonly DiagnosticDescriptor OpenGenericIdParameter = new(
-		id: "STRID006",
-		title: "StrictId closed with a generic type parameter",
-		messageFormat: "'{0}<{1}>' is parameterised by the type parameter '{1}'. Strong type safety requires a concrete entity type, not an open type parameter.",
-		category: Category,
-		defaultSeverity: DiagnosticSeverity.Warning,
-		isEnabledByDefault: true,
-		description: "StrictId's type tag must refer to a specific entity type so the compiler can prevent cross-entity mix-ups. A generic type parameter defeats that guarantee.");
-
 	/// <inheritdoc />
 	public override ImmutableArray<DiagnosticDescriptor> SupportedDiagnostics =>
-		ImmutableArray.Create(CrossTypeValueComparison, DefaultIdAssignment, WrongIdFamily, OpenGenericIdParameter);
+		ImmutableArray.Create(CrossTypeValueComparison, DefaultIdAssignment, WrongIdFamily);
 
 	/// <inheritdoc />
 	public override void Initialize (AnalysisContext context)
@@ -203,7 +192,7 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		return false;
 	}
 
-	// ═════ STRID005 + STRID006 — generic-name syntax analysis ════════════════
+	// ═════ STRID005 — generic-name syntax analysis ═══════════════════════════
 
 	private static void AnalyzeGenericName (SyntaxNodeAnalysisContext context, StrictIdSymbolCache cache)
 	{
@@ -223,25 +212,9 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 		if (closedGeneric.TypeArguments.Length != 1) return;
 		var typeArgument = closedGeneric.TypeArguments[0];
 
-		// STRID006 — generic type parameter. Fires first because the other rule is
-		// moot when the argument isn't a concrete type. StrictId's own library
-		// assemblies declare intentional wrapper generics (for example
-		// IdTypedJsonConverter<T> : JsonConverter<Id<T>>, and the Id<T>/IdNumber<T>/
-		// IdString<T> types themselves whose operators and members reference their
-		// own T through the closed generic). Scope the rule to the assembly being
-		// compiled so it only fires on user code, not on any StrictId source tree.
-		if (typeArgument is ITypeParameterSymbol typeParam)
-		{
-			if (!IsStrictIdLibraryAssembly(context.Compilation.Assembly))
-			{
-				context.ReportDiagnostic(Diagnostic.Create(
-					OpenGenericIdParameter,
-					genericName.GetLocation(),
-					closedGeneric.OriginalDefinition.Name,
-					typeParam.Name));
-			}
-			return;
-		}
+		// Skip type parameters — generic wrappers like Repository<T> using Id<T>
+		// are legitimate; nothing further to check.
+		if (typeArgument is ITypeParameterSymbol) return;
 
 		// STRID005 — entity has [IdString] but is being used via Id<T>/IdNumber<T>.
 		if (cache.IdStringAttribute is null) return;
@@ -262,19 +235,6 @@ public sealed class StrictIdUsageAnalyzer : DiagnosticAnalyzer
 			genericName.GetLocation(),
 			typeArgument.ToDisplayString(),
 			familyName));
-	}
-
-	/// <summary>
-	/// Returns <see langword="true"/> if <paramref name="assembly"/> is one of the
-	/// StrictId library assemblies. Used to exempt library-internal wrapper generics
-	/// from STRID006: types like <c>IdTypedJsonConverter&lt;T&gt;</c> legitimately
-	/// propagate a generic parameter through <c>Id&lt;T&gt;</c> by design.
-	/// </summary>
-	private static bool IsStrictIdLibraryAssembly (IAssemblySymbol? assembly)
-	{
-		if (assembly is null) return false;
-		var name = assembly.Name;
-		return name is "StrictId" or "StrictId.EFCore" or "StrictId.AspNetCore";
 	}
 
 	private static bool HasIdStringAttribute (ITypeSymbol type, INamedTypeSymbol attributeSymbol)

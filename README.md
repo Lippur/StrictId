@@ -24,8 +24,6 @@ public class User
 }
 ```
 
-It's just generic structs and attributes. Decorate your entities with `[IdPrefix]` if you want prefixed string forms, and you're good to go.
-
 ## Why StrictId
 
 - **Zero boilerplate.** `Id<User>` just works, without partial classes or source generation. Opt in to advanced features like ID prefixes gradually, without breaking anything.
@@ -71,7 +69,7 @@ This pattern (`NewId()`, `Parse`, `TryParse`, `IsValid`, `ToString` with format 
 - **System.Text.Json** converters for every family, including dictionary key support. Works out of the box.
 - **EF Core** value converters and conventions via [StrictId.EFCore](https://www.nuget.org/packages/StrictId.EFCore). Prefixes live in the type system and are never stored in the database, so your column types stay efficient.
 - **ASP.NET Core** integration via [StrictId.AspNetCore](https://www.nuget.org/packages/StrictId.AspNetCore), including OpenAPI schemas with per-type patterns and examples, route constraints, and `ProblemDetails` on parse failure.
-- **Roslyn analysers** (STRID001–006) catch cross-type `.Value` comparisons, malformed `[IdPrefix]` declarations, wrong-family attribute mismatches, and more at compile time.
+- **Roslyn analysers** (STRID001–005) catch cross-type `.Value` comparisons, malformed `[IdPrefix]` declarations, wrong-family attribute mismatches, and more at compile time.
 - **AOT-friendly.** A bundled source generator populates a registry at module init so JSON and EF Core hot paths skip reflection.
 - Only one dependency, [Ulid](https://github.com/Cysharp/Ulid).
 
@@ -374,7 +372,7 @@ builder.Services.AddStrictIdProblemDetails();
 
 ## Analysers
 
-Six Roslyn analysers ship inside the main package:
+Five Roslyn analysers ship inside the main package:
 
 | ID       | Severity | What it catches                                                                        |
 |----------|----------|----------------------------------------------------------------------------------------|
@@ -383,7 +381,6 @@ Six Roslyn analysers ship inside the main package:
 | STRID003 | Error    | Invalid `[IdPrefix]`: bad grammar, duplicates, missing `IsDefault`                     |
 | STRID004 | Error    | Invalid `[IdSeparator]`: out-of-range enum cast                                        |
 | STRID005 | Warning  | Wrong ID family for entity's attributes (e.g. using `Id<T>` when `T` has `[IdString]`) |
-| STRID006 | Warning  | StrictId closed with an open generic type parameter instead of a concrete type         |
 
 ## v1/v2 to v3 migration
 
